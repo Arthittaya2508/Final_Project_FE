@@ -1,9 +1,9 @@
 "use client";
 
-import { setSizeSelection } from "@/lib/features/products/productsSlice";
-import { useAppDispatch, useAppSelector } from "@/lib/hooks/redux";
-import { RootState } from "@/lib/store";
-import { cn } from "@/lib/utils";
+import { setSizeSelection } from "../../../lib/features/products/productsSlice";
+import { useAppDispatch, useAppSelector } from "../../../lib/hooks/redux";
+import { RootState } from "../../../lib/store";
+import { cn } from "../../../lib/utils";
 import React from "react";
 
 const SizeSelection = () => {

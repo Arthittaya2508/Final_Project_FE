@@ -4,8 +4,8 @@ import {
   NavigationMenuItem,
   NavigationMenuLink,
   navigationMenuTriggerStyle,
-} from "@/components/ui/navigation-menu";
-import { cn } from "@/lib/utils";
+} from "../../../../components/ui/navigation-menu";
+import { cn } from "../../../../lib/utils";
 
 type MenuItemProps = {
   label: string;

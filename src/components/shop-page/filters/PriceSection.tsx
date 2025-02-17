@@ -4,8 +4,8 @@ import {
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from "@/components/ui/accordion";
-import { Slider } from "@/components/ui/slider";
+} from "../../../components/ui/accordion";
+import { Slider } from "../../../components/ui/slider";
 
 const PriceSection = () => {
   return (

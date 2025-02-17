@@ -2,8 +2,8 @@
 
 import React from "react";
 import * as motion from "framer-motion/client";
-import { cn } from "@/lib/utils";
-import { integralCF } from "@/styles/fonts";
+import { cn } from "../../../lib/utils";
+import { integralCF } from "../../../styles/fonts";
 import {
   Carousel,
   CarouselContent,
@@ -11,11 +11,11 @@ import {
   CarouselNext,
   CarouselPrevious,
   type CarouselApi,
-} from "@/components/ui/carousel";
+} from "../../../components/ui/carousel";
 import { FaArrowLeft, FaArrowRight } from "react-icons/fa6";
 import { useIsClient, useMediaQuery } from "usehooks-ts";
-import ReviewCard from "@/components/common/ReviewCard";
-import { Review } from "@/types/review.types";
+import ReviewCard from "../../../components/common/ReviewCard";
+import { Review } from "../../../types/review.types";
 
 type ReviewsProps = { data: Review[] };
 

@@ -6,8 +6,8 @@ import {
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from "@/components/ui/accordion";
-import { cn } from "@/lib/utils";
+} from "../../../components/ui/accordion";
+import { cn } from "../../../lib/utils";
 
 const SizeSection = () => {
   const [selected, setSelected] = useState<string>("Large");

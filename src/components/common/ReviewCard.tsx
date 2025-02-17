@@ -3,8 +3,8 @@ import Rating from "../ui/Rating";
 import { IoEllipsisHorizontal } from "react-icons/io5";
 import { Button } from "../ui/button";
 import { IoIosCheckmarkCircle } from "react-icons/io";
-import { Review } from "@/types/review.types";
-import { cn } from "@/lib/utils";
+import { Review } from "../../types/review.types";
+import { cn } from "../../lib/utils";
 
 type ReviewCardProps = {
   blurChild?: React.ReactNode;

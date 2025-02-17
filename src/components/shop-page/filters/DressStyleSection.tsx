@@ -4,7 +4,7 @@ import {
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from "@/components/ui/accordion";
+} from "../../../components/ui/accordion";
 import Link from "next/link";
 import { MdKeyboardArrowRight } from "react-icons/md";
 

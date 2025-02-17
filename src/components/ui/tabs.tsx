@@ -1,5 +1,5 @@
 import React, { useState, ReactNode } from "react";
-import { cn } from "@/lib/utils";
+import { cn } from "../../lib/utils";
 
 interface TabsProps {
   defaultValue: string;

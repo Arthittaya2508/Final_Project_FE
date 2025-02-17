@@ -1,9 +1,9 @@
-import ProductListSec from "@/components/common/ProductListSec";
-import Brands from "@/components/homepage/Brands";
-import DressStyle from "@/components/homepage/DressStyle";
-import Header from "@/components/homepage/Header";
-import { Product } from "@/types/product.types";
-import { Review } from "@/types/review.types";
+import ProductListSec from "../../components/common/ProductListSec";
+import Brands from "../../components/homepage/Brands";
+import DressStyle from "../../components/homepage/DressStyle";
+import Header from "../../components/homepage/Header";
+import { Product } from "../../types/product.types";
+import { Review } from "../../types/review.types";
 
 // อัตราแลกเปลี่ยน (USD -> THB)
 const exchangeRate = 35;

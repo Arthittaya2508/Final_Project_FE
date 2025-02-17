@@ -1,5 +1,5 @@
-import { cn } from "@/lib/utils";
-import { integralCF } from "@/styles/fonts";
+import { cn } from "../../../lib/utils";
+import { integralCF } from "../../../styles/fonts";
 import React from "react";
 import { PaymentBadge, SocialNetworks } from "./footer.types";
 import { FaFacebookF, FaGithub, FaInstagram, FaTwitter } from "react-icons/fa";

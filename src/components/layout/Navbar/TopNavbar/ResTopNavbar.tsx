@@ -6,18 +6,18 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from "@/components/ui/sheet";
+} from "../../../../components/ui/sheet";
 import Image from "next/image";
 import Link from "next/link";
-import { cn } from "@/lib/utils";
-import { integralCF } from "@/styles/fonts";
+import { cn } from "../../../../lib/utils";
+import { integralCF } from "../../../../styles/fonts";
 import { NavMenu } from "../navbar.types";
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from "@/components/ui/accordion";
+} from "../../../../components/ui/accordion";
 
 const ResTopNavbar = ({ data }: { data: NavMenu }) => {
   return (

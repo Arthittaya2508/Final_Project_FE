@@ -1,9 +1,9 @@
 import React from "react";
 import PhotoSection from "./PhotoSection";
-import { Product } from "@/types/product.types";
-import { integralCF } from "@/styles/fonts";
-import { cn } from "@/lib/utils";
-import Rating from "@/components/ui/Rating";
+import { Product } from "../../../types/product.types";
+import { integralCF } from "../../../styles/fonts";
+import { cn } from "../../../lib/utils";
+import Rating from "../../../components/ui/Rating";
 import ColorSelection from "./ColorSelection";
 import SizeSelection from "./SizeSelection";
 import AddToCardSection from "./AddToCardSection";

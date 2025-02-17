@@ -1,7 +1,7 @@
 "use client";
 
-import { useAppSelector } from "@/lib/hooks/redux";
-import { RootState } from "@/lib/store";
+import { useAppSelector } from "../../../../lib/hooks/redux";
+import { RootState } from "../../../../lib/store";
 import Image from "next/image";
 import Link from "next/link";
 import React from "react";

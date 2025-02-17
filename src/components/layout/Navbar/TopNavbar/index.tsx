@@ -1,19 +1,19 @@
 'use client';
 import React, { useState } from "react";
-import { cn } from "@/lib/utils";
+import { cn } from "../../../../lib/utils";
 import Link from "next/link";
 import { NavMenu } from "../navbar.types";
 import { MenuList } from "./MenuList";
 import {
   NavigationMenu,
   NavigationMenuList,
-} from "@/components/ui/navigation-menu";
+} from "../../../../components/ui/navigation-menu";
 import { MenuItem } from "./MenuItem";
 import Image from "next/image";
-import InputGroup from "@/components/ui/input-group";
+import InputGroup from "../../../../components/ui/input-group";
 import ResTopNavbar from "./ResTopNavbar";
 import CartBtn from "./CartBtn";
-import ModalAuth from "@/components/ui/ModalAuth";  // Assume this is your Modal Component
+import ModalAuth from "../../../../components/ui/ModalAuth";  // Assume this is your Modal Component
 
 const data: NavMenu = [
   {

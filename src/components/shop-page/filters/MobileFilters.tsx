@@ -8,7 +8,7 @@ import {
   DrawerHeader,
   DrawerTitle,
   DrawerTrigger,
-} from "@/components/ui/drawer";
+} from "../../../components/ui/drawer";
 import { FiSliders } from "react-icons/fi";
 import Filters from ".";
 

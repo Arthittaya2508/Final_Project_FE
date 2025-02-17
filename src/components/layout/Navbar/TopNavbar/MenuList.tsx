@@ -1,13 +1,13 @@
 import * as React from "react";
 import Link from "next/link";
 
-import { cn } from "@/lib/utils";
+import { cn } from "../../../../lib/utils";
 import {
   NavigationMenuContent,
   NavigationMenuItem,
   NavigationMenuLink,
   NavigationMenuTrigger,
-} from "@/components/ui/navigation-menu";
+} from "../../../../components/ui/navigation-menu";
 import { MenuListData } from "../navbar.types";
 
 export type MenuListProps = {

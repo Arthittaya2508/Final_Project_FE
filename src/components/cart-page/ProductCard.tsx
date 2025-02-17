@@ -4,15 +4,15 @@ import React from "react";
 import { PiTrashFill } from "react-icons/pi";
 import Image from "next/image";
 import Link from "next/link";
-import CartCounter from "@/components/ui/CartCounter";
+import CartCounter from "../../components/ui/CartCounter";
 import { Button } from "../ui/button";
 import {
   addToCart,
   CartItem,
   remove,
   removeCartItem,
-} from "@/lib/features/carts/cartsSlice";
-import { useAppDispatch } from "@/lib/hooks/redux";
+} from "../../lib/features/carts/cartsSlice";
+import { useAppDispatch } from "../../lib/hooks/redux";
 
 // อัตราแลกเปลี่ยน (USD -> THB)
 const exchangeRate = 35;

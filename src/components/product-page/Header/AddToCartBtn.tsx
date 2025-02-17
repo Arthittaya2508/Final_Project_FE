@@ -1,9 +1,9 @@
 "use client";
 
-import { addToCart } from "@/lib/features/carts/cartsSlice";
-import { useAppDispatch, useAppSelector } from "@/lib/hooks/redux";
-import { RootState } from "@/lib/store";
-import { Product } from "@/types/product.types";
+import { addToCart } from "../../../lib/features/carts/cartsSlice";
+import { useAppDispatch, useAppSelector } from "../../../lib/hooks/redux";
+import { RootState } from "../../../lib/store";
+import { Product } from "../../../types/product.types";
 import React from "react";
 
 const AddToCartBtn = ({ data }: { data: Product & { quantity: number } }) => {

@@ -1,4 +1,4 @@
-import { Button } from "@/components/ui/button";
+import { Button } from "../../../components/ui/button";
 import React from "react";
 import {
   Select,
@@ -6,9 +6,9 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import ReviewCard from "@/components/common/ReviewCard";
-import { reviewsData } from "@/app/page";
+} from "../../../components/ui/select";
+import ReviewCard from "../../../components/common/ReviewCard";
+import { reviewsData } from "../app/page";
 import Link from "next/link";
 
 const ReviewsContent = () => {
