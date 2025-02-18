@@ -82,15 +82,15 @@
 // }
 
 // export default Page;
-import Sidebar from "@/components/Sidebar";
-import React from "react";
+// import Sidebar from "@/components/Sidebar";
+// import React from "react";
 
-function Dashboard() {
-  return (
-    <div>
-      <Sidebar />
-    </div>
-  );
-}
+// function Dashboard() {
+//   return (
+//     <div>
+//       <Sidebar />
+//     </div>
+//   );
+// }
 
-export default Dashboard;
+// export default Dashboard;

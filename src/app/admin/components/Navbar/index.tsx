@@ -1,14 +1,15 @@
 import React, { useState } from "react";
-import NotificationModal from "../noti-modal/noti-modal";
+import NotificationModal from "../Noti-modal/noti-modal";
 
 const Navbar: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const notifications = [
-    "Order #1234 has been shipped",
-    "New message from customer",
-    "Payment for Order #5678 is confirmed",
+    "คำสั่งซื้อ #1234 ได้รับการจัดส่งแล้ว",
+    "คุณมีข้อความใหม่จากลูกค้า",
+    "การชำระเงินสำหรับคำสั่งซื้อ #5678 ได้รับการยืนยันแล้ว",
   ];
+  
 
   return (
     <nav className="bg-gray-800 p-4">

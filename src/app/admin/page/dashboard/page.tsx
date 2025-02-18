@@ -1,8 +1,8 @@
 "use client";
-import StatusFilter from "../components/Filter/StatusFilter";
-import Status from "../components/Status";
+import StatusFilter from "../../components/Filter/StatusFilter";
+import Status from "../../components/Status";
 // import TabbarSection from "../containers/sandbox-page/tabbar-section";
-import TableSection from "../containers/sandbox-page/table-section";
+import TableSection from "../../containers/sandbox-page/table-section";
 
 import React from "react";
 

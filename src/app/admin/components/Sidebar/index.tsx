@@ -28,7 +28,7 @@ const menuItems = [
     icon: <TbBriefcase />,
     href: '#',
     submenu: [
-      { label: 'ข้อมูลสินค้า', href: '/product/category' },
+      { label: 'ข้อมูลสินค้า', href: '/admin/page/products' },
       { label: 'ข้อมูลประเภท', href: '/product/category' },
       { label: 'ข้อมูลแบรนด์', href: '/product/brand' },
       { label: 'ข้อมูลสี', href: '/product/color' },

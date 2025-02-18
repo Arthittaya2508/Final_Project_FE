@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { tabs } from "@/lib/data";
+import { tabs } from "../../../../lib/data";
 
 export default function Tabbar() {
   const [openTab, setOpenTab] = useState(1);

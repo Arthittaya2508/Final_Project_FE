@@ -1,6 +1,6 @@
 "use client";
-import Navbar from "./components/nav/nav";
-import Sidebar from "./components/sidebar/sidebar";
+import Navbar from "./components/Navbar";
+import Sidebar from "./components/Sidebar";
 import "../../styles/globals.css";
 
 export default function AdminLayout({

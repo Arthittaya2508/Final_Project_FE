@@ -1,4 +1,6 @@
 import type { Config } from "tailwindcss";
+import { heroui } from "@heroui/react";
+import tailwindcssAnimate from "tailwindcss-animate";
 
 const config: Config = {
   darkMode: ["class"],
@@ -6,6 +8,11 @@ const config: Config = {
     "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
+    "./pages/**/*.{js,ts,jsx,tsx,mdx}",
+    "./components/**/*.{js,ts,jsx,tsx,mdx}",
+    "./containers/**/*.{js,ts,jsx,tsx,mdx}",
+    "./context/**/*.{js,ts,jsx,tsx,mdx}",
+    "./node_modules/@heroui/theme/dist/**/*.{js,ts,jsx,tsx}",
   ],
   theme: {
     extend: {
@@ -21,6 +28,24 @@ const config: Config = {
       },
       maxWidth: {
         frame: "77.5rem",
+        "24": "6.625rem",
+        "40": "9.688rem",
+        "42": "11.188rem",
+        "48": "12.375rem",
+        "52": "13.625rem",
+        "60": "30rem",
+        "61": "30.625rem",
+        "70": "48.125rem",
+      },
+      minWidth: {
+        "60": "30rem",
+        "61": "30.625rem",
+        "70": "48.125rem",
+      },
+      height: {
+        "50": "31.25rem",
+        "64": "40rem",
+        "89": "56rem",
       },
       backgroundImage: {
         "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",
@@ -31,10 +56,14 @@ const config: Config = {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
+        none: "0rem",
+        full: "9999px",
       },
       colors: {
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
+        black: "#393939",
+        light: "#FFFFFF",
         card: {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
@@ -98,7 +127,73 @@ const config: Config = {
       },
     },
   },
-  plugins: [require("tailwindcss-animate")],
+  plugins: [
+    tailwindcssAnimate,
+    heroui({
+      addCommonColors: true,
+      themes: {
+        light: {
+          colors: {
+            foreground: "#393939",
+            primary: {
+              DEFAULT: "#1a374d",
+              900: "#1a374d",
+              800: "#1f4d6d",
+              700: "#215a83",
+              600: "#2870a1",
+              500: "#388cbf",
+              400: "#5da7d3",
+              300: "#95c5e4",
+              200: "#c7dff0",
+              100: "#f3f7fc",
+              foreground: "#ffffff",
+            },
+            danger: {
+              DEFAULT: "#1d2a34",
+              900: "#1d2a34",
+              800: "#2c404e",
+              700: "#304b5c",
+              600: "#37576d",
+              500: "#406882",
+              400: "#5586a2",
+              300: "#77a1b9",
+              200: "#a6c2d3",
+              100: "#d0dee7",
+              50: "#eaeff4",
+              foreground: "#FFFFFF",
+            },
+            success: {
+              DEFAULT: "#094E28",
+              900: "#094E28",
+              800: "#0F5E2B",
+              700: "#187531",
+              600: "#238C35",
+              500: "#30A33A",
+              400: "#5EC75E",
+              300: "#8CE383",
+              200: "#BDF5B0",
+              100: "#E0FAD7",
+              foreground: "#187531",
+            },
+            secondary: {
+              DEFAULT: "#ACEED6",
+              900: "#0B493E",
+              800: "#0C594A",
+              700: "#0D7C66",
+              600: "#0F8C70",
+              500: "#1BAE8A",
+              400: "#3FC8A2",
+              300: "#76DFBE",
+              200: "#ACEED6",
+              100: "#D4F7E8",
+              foreground: "#0D7C66",
+            },
+          },
+        },
+      },
+    }),
+  ],
   safelist: ["backdrop-blur-[2px]"],
 };
+
 export default config;
