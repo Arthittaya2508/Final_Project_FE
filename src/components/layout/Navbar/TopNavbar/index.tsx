@@ -24,25 +24,25 @@ const data: NavMenu = [
       {
         id: 11,
         label: "Men's clothes",
-        url: "/shop#men-clothes",
+        url: "/user/shop#men-clothes",
         description: "In attractive and spectacular colors and designs",
       },
       {
         id: 12,
         label: "Women's clothes",
-        url: "/shop#women-clothes",
+        url: "/user/shop#women-clothes",
         description: "Ladies, your style and tastes are important to us",
       },
       {
         id: 13,
         label: "Kids clothes",
-        url: "/shop#kids-clothes",
+        url: "/user/shop#kids-clothes",
         description: "For all ages, with happy and beautiful colors",
       },
       {
         id: 14,
         label: "Bags and Shoes",
-        url: "/shop#bag-shoes",
+        url: "/user/shop#bag-shoes",
         description: "Suitable for men, women and all tastes and styles",
       },
     ],
@@ -51,21 +51,21 @@ const data: NavMenu = [
     id: 2,
     type: "MenuItem",
     label: "On Sale",
-    url: "/shop#on-sale",
+    url: "/user/shop#on-sale",
     children: [],
   },
   {
     id: 3,
     type: "MenuItem",
     label: "New Arrivals",
-    url: "/shop#new-arrivals",
+    url: "/user/shop#new-arrivals",
     children: [],
   },
   {
     id: 4,
     type: "MenuItem",
     label: "Brands",
-    url: "/shop#brands",
+    url: "/user/shop#brands",
     children: [],
   },
 ];
@@ -89,7 +89,7 @@ const TopNavbar = () => {
             <ResTopNavbar data={data} />
           </div>
           <Link
-            href="/"
+            href="/user"
             className={cn([
               // integralCF.className,
               "text-2xl lg:text-[32px] mb-2 mr-3 lg:mr-10",
@@ -131,7 +131,7 @@ const TopNavbar = () => {
           />
         </InputGroup>
         <div className="flex items-center">
-          <Link href="/search" className="block md:hidden mr-[14px] p-1">
+          <Link href="/user/search" className="block md:hidden mr-[14px] p-1">
             <Image
               priority
               src="/icons/search-black.svg"

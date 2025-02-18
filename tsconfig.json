@@ -23,7 +23,11 @@
       {
         "name": "next"
       }
-    ]
+    ],
+    "baseUrl": ".",  // เพิ่ม baseUrl
+    "paths": {
+      "@/*": ["src/*"]
+    }
   },
   "include": [
     "src",

@@ -19,8 +19,8 @@ export const newArrivalsData: Product[] = [
   {
     id: 1,
     title: "เสื้อแขนยาว",
-    srcUrl: "/images/pic1.png",
-    gallery: ["/images/pic1.png", "/images/pic10.png", "/images/pic11.png"],
+    srcUrl: "/images/pic16.png",
+    gallery: ["/images/pic16.png", "/images/pic16.png", "/images/pic16.png"],
     price: 7.42,  // ราคาเป็นเงินบาทไทย (THB)
     discount: {
       amount: 0,
@@ -32,8 +32,8 @@ export const newArrivalsData: Product[] = [
   {
     id: 2,
     title: "กางเกงยีนส์ Skinny Fit",
-    srcUrl: "/images/pic2.png",
-    gallery: ["/images/pic2.png"],
+    srcUrl: "/images/pic16.png",
+    gallery: ["/images/pic16.png"],
     price: 7.42,  // ราคาเป็นเงินบาทไทย (THB)
     discount: {
       amount: 0,
@@ -45,8 +45,8 @@ export const newArrivalsData: Product[] = [
   {
     id: 3,
     title: "เชิ้ตลายสก๊อต",
-    srcUrl: "/images/pic3.png",
-    gallery: ["/images/pic3.png"],
+    srcUrl: "/images/pic16.png",
+    gallery: ["/images/pic16.png"],
     price: 7.42,  // ราคาเป็นเงินบาทไทย (THB)
     discount: {
       amount: 0,
@@ -58,8 +58,8 @@ export const newArrivalsData: Product[] = [
   {
     id: 4,
     title: "เสื้อยืดแขนยาวลายทาง",
-    srcUrl: "/images/pic4.png",
-    gallery: ["/images/pic4.png", "/images/pic10.png", "/images/pic11.png"],
+    srcUrl: "/images/pic17.png",
+    gallery: ["/images/pic17.png", "/images/pic17.png", "/images/pic17.png"],
     price: 7.42,  // ราคาเป็นเงินบาทไทย (THB)
     discount: {
       amount: 0,
@@ -74,7 +74,7 @@ export const topSellingData: Product[] = [
   {
     id: 5,
     title: "เสื้อเชิ้ตลายทางตั้ง",
-    srcUrl: "/images/pic5.png",
+    srcUrl: "/images/pic17.png",
     gallery: ["/images/pic5.png", "/images/pic10.png", "/images/pic11.png"],
     price: 7.42,  // ราคาเป็นเงินบาทไทย (THB)
     discount: {
@@ -87,7 +87,7 @@ export const topSellingData: Product[] = [
   {
     id: 6,
     title: "เสื้อยืดกราฟิก",
-    srcUrl: "/images/pic6.png",
+    srcUrl: "/images/pic16.png",
     gallery: ["/images/pic6.png", "/images/pic10.png", "/images/pic11.png"],
     price: 7.42,  // ราคาเป็นเงินบาทไทย (THB)
     discount: {
@@ -100,8 +100,8 @@ export const topSellingData: Product[] = [
   {
     id: 7,
     title: "กางเกงขาสั้น Bermuda",
-    srcUrl: "/images/pic7.png",
-    gallery: ["/images/pic7.png"],
+    srcUrl: "/images/pic17.png",
+    gallery: ["/images/pic17.png"],
     price: 7.42,  // ราคาเป็นเงินบาทไทย (THB)
     discount: {
       amount: 0,
@@ -113,8 +113,8 @@ export const topSellingData: Product[] = [
   {
     id: 8,
     title: "ยีนส์ Skinny ฟอกสี",
-    srcUrl: "/images/pic8.png",
-    gallery: ["/images/pic8.png"],
+    srcUrl: "/images/pic17.png",
+    gallery: ["/images/pic17.png"],
     price: 7.42,  // ราคาเป็นเงินบาทไทย (THB)
     discount: {
       amount: 0,
@@ -129,8 +129,8 @@ export const relatedProductData: Product[] = [
   {
     id: 9,
     title: "ชุดเดรสลายดอกไม้",
-    srcUrl: "/images/pic9.png",
-    gallery: ["/images/pic9.png"],
+    srcUrl: "/images/pic16.png",
+    gallery: ["/images/pic16.png"],
     price: 7.42,  // ราคาเป็นเงินบาทไทย (THB)
     discount: {
       amount: 0,
@@ -142,8 +142,8 @@ export const relatedProductData: Product[] = [
   {
     id: 10,
     title: "แจ็คเก็ตยีนส์",
-    srcUrl: "/images/pic10.png",
-    gallery: ["/images/pic10.png"],
+    srcUrl: "/images/pic16.png",
+    gallery: ["/images/pic16.png"],
     price: 7.42,  // ราคาเป็นเงินบาทไทย (THB)
     discount: {
       amount: 0,
@@ -155,8 +155,8 @@ export const relatedProductData: Product[] = [
   {
     id: 11,
     title: "รองเท้าผ้าใบ",
-    srcUrl: "/images/pic11.png",
-    gallery: ["/images/pic11.png"],
+    srcUrl: "/images/pic17.png",
+    gallery: ["/images/pic17.png"],
     price: 7.42,  // ราคาเป็นเงินบาทไทย (THB)
     discount: {
       amount: 0,
@@ -183,7 +183,7 @@ export default function Home() {
               amount: product.discount.amount * exchangeRate,
             },
           }))}
-          viewAllLink="/shop#new-arrivals"
+          viewAllLink="/user/shop#new-arrivals"
         />
         <div className="max-w-frame mx-auto px-4 xl:px-0">
           <hr className="h-[1px] border-t-black/10 my-10 sm:my-16" />
@@ -199,7 +199,7 @@ export default function Home() {
                 amount: product.discount.amount * exchangeRate,
               },
             }))}
-            viewAllLink="/shop#top-selling"
+            viewAllLink="/user/shop#top-selling"
           />
         </div>
         <div className="mb-[50px] sm:mb-20">

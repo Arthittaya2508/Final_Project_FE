@@ -1,25 +1,23 @@
 "use client";
 
-import BreadcrumbCart from "@/components/cart-page/BreadcrumbCart";
-import ProductCard from "@/components/cart-page/ProductCard";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
-import { integralCF } from "@/styles/fonts";
+import BreadcrumbCart from "../../../components/cart-page/BreadcrumbCart";
+import ProductCard from "../../../components/cart-page/ProductCard";
+import { Button } from "../../../components/ui/button";
+import { cn } from "../../../lib/utils";
+import { integralCF } from "../../../styles/fonts";
 import { FaArrowRight } from "react-icons/fa6";
 import { MdOutlineLocalOffer } from "react-icons/md";
 import { TbBasketExclamation } from "react-icons/tb";
 import React from "react";
-import { RootState } from "@/lib/store";
-import { useAppSelector } from "@/lib/hooks/redux";
+import { RootState } from "../../..//lib/store";
+import { useAppSelector } from "../../../lib/hooks/redux";
 import Link from "next/link";
 
-// อัตราแลกเปลี่ยน (USD -> THB)
-const exchangeRate = 35;
-
+// ฟังก์ชันนี้จะไม่แปลงราคาจาก USD เป็น THB แล้ว
 const formatPrice = (price: number) => {
-  return new Intl.NumberFormat("th-TH", {
+  return new Intl.NumberFormat("en-US", {
     style: "currency",
-    currency: "THB",
+    currency: "USD",
   }).format(price);
 };
 
@@ -54,7 +52,7 @@ export default function CartPage() {
                   <div className="flex items-center justify-between">
                     <span className="md:text-xl text-black/60">รวม</span>
                     <span className="md:text-xl font-bold">
-                      {formatPrice(totalPrice * exchangeRate)} {/* แปลงราคาเป็นเงินบาท */}
+                      {formatPrice(totalPrice)} {/* แสดงราคาใน USD */}
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
@@ -62,7 +60,7 @@ export default function CartPage() {
                       ส่วนลด (-{Math.round(((totalPrice - adjustedTotalPrice) / totalPrice) * 100)}%)
                     </span>
                     <span className="md:text-xl font-bold text-red-600">
-                      -{formatPrice((totalPrice - adjustedTotalPrice) * exchangeRate)} {/* ส่วนลดในเงินบาท */}
+                      -{formatPrice(totalPrice - adjustedTotalPrice)} {/* ส่วนลดใน USD */}
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
@@ -73,7 +71,7 @@ export default function CartPage() {
                   <div className="flex items-center justify-between">
                     <span className="md:text-xl text-black">รวมทั้งหมด</span>
                     <span className="text-xl md:text-2xl font-bold">
-                      {formatPrice(adjustedTotalPrice * exchangeRate)} {/* แปลงราคาเป็นเงินบาท */}
+                      {formatPrice(adjustedTotalPrice)} {/* แสดงราคาใน USD */}
                     </span>
                   </div>
                 </div>
@@ -92,7 +90,7 @@ export default function CartPage() {
             <TbBasketExclamation strokeWidth={1} className="text-6xl" />
             <span className="block mb-4">Your shopping cart is empty.</span>
             <Button className="rounded-full w-24" asChild>
-              <Link href="/shop">Shop</Link>
+              <Link href="/user/shop">Shop</Link>
             </Button>
           </div>
         )}

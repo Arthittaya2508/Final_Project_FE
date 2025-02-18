@@ -1,16 +1,28 @@
+'use client'
 import { Button } from "../../../components/ui/button";
 import Image from "next/image";
 import Link from "next/link";
-import React from "react";
+import React, { useState } from "react";
 
 const TopBanner = () => {
+  // สร้างสถานะเพื่อควบคุมการแสดงผลของแบนเนอร์
+  const [isVisible, setIsVisible] = useState(true);
+
+  // ฟังก์ชันที่ใช้ปิดแบนเนอร์เมื่อคลิกปุ่ม "close"
+  const handleCloseBanner = () => {
+    setIsVisible(false);
+  };
+
+  // ถ้า isVisible เป็น false จะไม่แสดงแบนเนอร์
+  if (!isVisible) return null;
+
   return (
     <div className="bg-black text-white text-center py-2 px-2 sm:px-4 xl:px-0">
       <div className="relative max-w-frame mx-auto">
         <p className="text-xs sm:text-sm">
-          Sign up and get 20% off to your first order.{" "}
+          สมัครสมาชิกและรับส่วนลด 20% สำหรับการสั่งซื้อครั้งแรกของคุณ{" "}
           <Link href="#" className="underline font-medium">
-            Sign Up Now
+            สมัครสมาชิก ตอนนี้
           </Link>
         </p>
         <Button
@@ -19,6 +31,7 @@ const TopBanner = () => {
           size="icon"
           type="button"
           aria-label="close banner"
+          onClick={handleCloseBanner} // เพิ่ม onClick เพื่อปิดแบนเนอร์
         >
           <Image
             priority
