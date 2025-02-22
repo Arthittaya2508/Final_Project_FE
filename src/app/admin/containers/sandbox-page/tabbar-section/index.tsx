@@ -41,7 +41,7 @@ const tabs = [
 const fetchData = async (api: string) => {
   try {
     const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}${api}`);
-    if (!response.ok) {
+        if (!response.ok) {
       throw new Error("Network response was not ok");
     }
 
@@ -83,24 +83,26 @@ const fetchData = async (api: string) => {
 };
 
 export default function Tabbar() {
-  // ดึงค่า openTab จาก localStorage หากมี
-  const savedTab = localStorage.getItem("openTab");
-  const [openTab, setOpenTab] = useState<number>(savedTab ? parseInt(savedTab) : 1); // ถ้าไม่มีจะใช้ค่า default เป็น 1
+  const [openTab, setOpenTab] = useState<number>(1);
   const [data, setData] = useState<Item[]>([]);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const savedTab = localStorage.getItem("openTab");
+      if (savedTab) {
+        setOpenTab(parseInt(savedTab));
+      }
+    }
+  }, []);
 
   useEffect(() => {
     const tab = tabs.find((t) => t.id === openTab);
     if (!tab) return;
     fetchData(tab.api).then(setData);
-
-    // บันทึก openTab ลง localStorage ทุกครั้งที่มีการเลือกแท็บ
-    localStorage.setItem("openTab", openTab.toString());
+    if (typeof window !== "undefined") {
+      localStorage.setItem("openTab", openTab.toString());
+    }
   }, [openTab]);
-
-  // ฟังก์ชันที่ทำงานเมื่อคลิกปุ่มเพิ่มข้อมูล
-  const handleAddData = () => {
-    alert(`เพิ่มข้อมูลในแท็บ ${tabs.find((tab) => tab.id === openTab)?.label}`);
-  };
 
   return (
     <div className="w-full p-6">
@@ -116,13 +118,14 @@ export default function Tabbar() {
             </a>
           </li>
         ))}
-        {/* ปุ่มเพิ่มข้อมูล */}
-        <button
-          onClick={handleAddData}
-          className="absolute right-0 top-1/2 transform -translate-y-1/2 bg-green-500 text-white px-4 py-2 rounded"
-        >
-          เพิ่มข้อมูล
-        </button>
+        <li className="ml-auto">
+          <button
+            onClick={() => alert(`เพิ่มข้อมูลในแท็บ ${tabs.find((tab) => tab.id === openTab)?.label}`)}
+            className="bg-green-500 text-white px-4 py-2 rounded"
+          >
+            เพิ่มข้อมูล
+          </button>
+        </li>
       </ul>
       <div className="mt-4">
         <table className="w-[1200px] border-collapse border border-gray-300">
@@ -136,9 +139,7 @@ export default function Tabbar() {
             {data.length > 0 ? (
               data.map((item) => (
                 <tr key={item.id} className="border-b">
-                  <td className="border p-2 text-black">
-                    {item.name ? item.name : 'ไม่มีชื่อ'}
-                  </td>
+                  <td className="border p-2 text-black">{item.name || "ไม่มีชื่อ"}</td>
                   <td className="border p-2 flex gap-2">
                     <button className="bg-yellow-500 text-white px-3 py-1 rounded">แก้ไข</button>
                     <button className="bg-red-500 text-white px-3 py-1 rounded">ลบ</button>
