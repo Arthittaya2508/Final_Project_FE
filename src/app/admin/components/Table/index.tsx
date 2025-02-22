@@ -61,32 +61,33 @@ interface Props extends TableProps {
   emptyWrapper?: boolean | undefined;
 }
 
-const Table: FC<Props> = forwardRef<HTMLElement, Props>(
-  ({ children, ...rest }, ref) => {
-    const checkboxClasses = useMemo(() => {
-      switch (rest.color) {
-        case "danger":
-          return {
-            wrapper: "before:border-primary-600 bg-white",
-          };
+const Table = forwardRef<HTMLElement, Props>(({ children, ...rest }, ref) => {
+  const checkboxClasses = useMemo(() => {
+    switch (rest.color) {
+      case "danger":
+        return {
+          wrapper: "before:border-primary-600 bg-white",
+        };
 
-        default:
-          return rest.checkboxesProps?.classNames;
-      }
-    }, [rest.color, rest.checkboxesProps?.classNames]);
+      default:
+        return rest.checkboxesProps?.classNames;
+    }
+  }, [rest.color, rest.checkboxesProps?.classNames]);
 
-    return (
-      <ExtendedTable
-        {...rest}
-        checkboxesProps={{
-          ...rest.checkboxesProps,
-          classNames: checkboxClasses,
-        }}
-      >
-        {children}
-      </ExtendedTable>
-    );
-  }
-);
+  return (
+    <ExtendedTable
+      {...rest}
+      ref={ref as unknown as never} // 🔧 ใช้ type assertion แก้ปัญหา ref
+      checkboxesProps={{
+        ...rest.checkboxesProps,
+        classNames: checkboxClasses,
+      }}
+    >
+      {children}
+    </ExtendedTable>
+  );
+});
+
+Table.displayName = "Table";
 
 export default Table;
