@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import NotificationModal from "../Noti-modal/noti-modal";
+import NotificationModal from "../Noti-modal";
 
 const Navbar: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
