@@ -1,4 +1,4 @@
-'use client';
+"use client";
 import React, { useState } from "react";
 import { cn } from "../../../../lib/utils";
 import Link from "next/link";
@@ -13,35 +13,35 @@ import Image from "next/image";
 import InputGroup from "../../../../components/ui/input-group";
 import ResTopNavbar from "./ResTopNavbar";
 import CartBtn from "./CartBtn";
-import ModalAuth from "../../../../components/ui/ModalAuth";  // Assume this is your Modal Component
+import ModalAuth from "../../../../components/ui/ModalAuth"; // Assume this is your Modal Component
 
 const data: NavMenu = [
   {
     id: 1,
-    label: "Shop",
+    label: "สินค้าทั้งหมด",
     type: "MenuList",
     children: [
       {
         id: 11,
-        label: "Men's clothes",
+        label: "ผู้ชาย",
         url: "/user/shop#men-clothes",
         description: "In attractive and spectacular colors and designs",
       },
       {
         id: 12,
-        label: "Women's clothes",
+        label: "ผู้หญิง",
         url: "/user/shop#women-clothes",
         description: "Ladies, your style and tastes are important to us",
       },
       {
         id: 13,
-        label: "Kids clothes",
+        label: "เด็ก",
         url: "/user/shop#kids-clothes",
         description: "For all ages, with happy and beautiful colors",
       },
       {
         id: 14,
-        label: "Bags and Shoes",
+        label: "อุปกรณ์กีฬา",
         url: "/user/shop#bag-shoes",
         description: "Suitable for men, women and all tastes and styles",
       },
@@ -50,21 +50,21 @@ const data: NavMenu = [
   {
     id: 2,
     type: "MenuItem",
-    label: "On Sale",
+    label: "ประเภทสินค้า",
     url: "/user/shop#on-sale",
     children: [],
   },
-  {
-    id: 3,
-    type: "MenuItem",
-    label: "New Arrivals",
-    url: "/user/shop#new-arrivals",
-    children: [],
-  },
+  // {
+  //   id: 3,
+  //   type: "MenuItem",
+  //   label: "New Arrivals",
+  //   url: "/user/shop#new-arrivals",
+  //   children: [],
+  // },
   {
     id: 4,
     type: "MenuItem",
-    label: "Brands",
+    label: "แบรนด์สินค้า",
     url: "/user/shop#brands",
     children: [],
   },
@@ -74,11 +74,11 @@ const TopNavbar = () => {
   const [isModalOpen, setIsModalOpen] = useState(false); // Add state for modal
 
   const handleOpenModal = () => {
-    setIsModalOpen(true);  // Open the modal
+    setIsModalOpen(true); // Open the modal
   };
 
   const handleCloseModal = () => {
-    setIsModalOpen(false);  // Close the modal
+    setIsModalOpen(false); // Close the modal
   };
 
   return (
@@ -95,7 +95,9 @@ const TopNavbar = () => {
               "text-2xl lg:text-[32px] mb-2 mr-3 lg:mr-10",
             ])}
           >
-            FF.Sport
+            FF_Shop
+            {/* <img src="/public/logo/logo.png" alt="" /> */}
+            {/* เฟื่องฟู Sport */}
           </Link>
         </div>
         <NavigationMenu className="hidden md:flex mr-2 lg:mr-7">
@@ -142,7 +144,9 @@ const TopNavbar = () => {
             />
           </Link>
           <CartBtn />
-          <button onClick={handleOpenModal} className="p-1"> {/* Open Modal on click */}
+          <button onClick={handleOpenModal} className="p-1">
+            {" "}
+            {/* Open Modal on click */}
             <Image
               priority
               src="/icons/user.svg"

@@ -1,9 +1,9 @@
-import ProductListSec from "../../components/common/ProductListSec";
-import Brands from "../../components/homepage/Brands";
-import DressStyle from "../../components/homepage/DressStyle";
-import Header from "../../components/homepage/Header";
-import { Product } from "../../types/product.types";
-import { Review } from "../../types/review.types";
+import ProductListSec from "../components/common/ProductListSec";
+import Brands from "../components/homepage/Brands";
+import DressStyle from "../components/homepage/DressStyle";
+import Header from "../components/homepage/Header";
+import { Product } from "../types/product.types";
+import { Review } from "../types/review.types";
 
 // อัตราแลกเปลี่ยน (USD -> THB)
 const exchangeRate = 35;
@@ -21,7 +21,7 @@ export const newArrivalsData: Product[] = [
     title: "เสื้อแขนยาว",
     srcUrl: "/images/pic16.png",
     gallery: ["/images/pic16.png", "/images/pic16.png", "/images/pic16.png"],
-    price: 7.42,  // ราคาเป็นเงินบาทไทย (THB)
+    price: 7.42, // ราคาเป็นเงินบาทไทย (THB)
     discount: {
       amount: 0,
       percentage: 0,
@@ -34,7 +34,7 @@ export const newArrivalsData: Product[] = [
     title: "กางเกงยีนส์ Skinny Fit",
     srcUrl: "/images/pic16.png",
     gallery: ["/images/pic16.png"],
-    price: 7.42,  // ราคาเป็นเงินบาทไทย (THB)
+    price: 7.42, // ราคาเป็นเงินบาทไทย (THB)
     discount: {
       amount: 0,
       percentage: 20,
@@ -47,7 +47,7 @@ export const newArrivalsData: Product[] = [
     title: "เชิ้ตลายสก๊อต",
     srcUrl: "/images/pic16.png",
     gallery: ["/images/pic16.png"],
-    price: 7.42,  // ราคาเป็นเงินบาทไทย (THB)
+    price: 7.42, // ราคาเป็นเงินบาทไทย (THB)
     discount: {
       amount: 0,
       percentage: 0,
@@ -60,7 +60,7 @@ export const newArrivalsData: Product[] = [
     title: "เสื้อยืดแขนยาวลายทาง",
     srcUrl: "/images/pic17.png",
     gallery: ["/images/pic17.png", "/images/pic17.png", "/images/pic17.png"],
-    price: 7.42,  // ราคาเป็นเงินบาทไทย (THB)
+    price: 7.42, // ราคาเป็นเงินบาทไทย (THB)
     discount: {
       amount: 0,
       percentage: 30,
@@ -76,7 +76,7 @@ export const topSellingData: Product[] = [
     title: "เสื้อเชิ้ตลายทางตั้ง",
     srcUrl: "/images/pic17.png",
     gallery: ["/images/pic5.png", "/images/pic10.png", "/images/pic11.png"],
-    price: 7.42,  // ราคาเป็นเงินบาทไทย (THB)
+    price: 7.42, // ราคาเป็นเงินบาทไทย (THB)
     discount: {
       amount: 0,
       percentage: 20,
@@ -89,7 +89,7 @@ export const topSellingData: Product[] = [
     title: "เสื้อยืดกราฟิก",
     srcUrl: "/images/pic16.png",
     gallery: ["/images/pic6.png", "/images/pic10.png", "/images/pic11.png"],
-    price: 7.42,  // ราคาเป็นเงินบาทไทย (THB)
+    price: 7.42, // ราคาเป็นเงินบาทไทย (THB)
     discount: {
       amount: 0,
       percentage: 0,
@@ -102,7 +102,7 @@ export const topSellingData: Product[] = [
     title: "กางเกงขาสั้น Bermuda",
     srcUrl: "/images/pic17.png",
     gallery: ["/images/pic17.png"],
-    price: 7.42,  // ราคาเป็นเงินบาทไทย (THB)
+    price: 7.42, // ราคาเป็นเงินบาทไทย (THB)
     discount: {
       amount: 0,
       percentage: 0,
@@ -115,7 +115,7 @@ export const topSellingData: Product[] = [
     title: "ยีนส์ Skinny ฟอกสี",
     srcUrl: "/images/pic17.png",
     gallery: ["/images/pic17.png"],
-    price: 7.42,  // ราคาเป็นเงินบาทไทย (THB)
+    price: 7.42, // ราคาเป็นเงินบาทไทย (THB)
     discount: {
       amount: 0,
       percentage: 0,
@@ -131,7 +131,7 @@ export const relatedProductData: Product[] = [
     title: "ชุดเดรสลายดอกไม้",
     srcUrl: "/images/pic16.png",
     gallery: ["/images/pic16.png"],
-    price: 7.42,  // ราคาเป็นเงินบาทไทย (THB)
+    price: 7.42, // ราคาเป็นเงินบาทไทย (THB)
     discount: {
       amount: 0,
       percentage: 15,
@@ -144,7 +144,7 @@ export const relatedProductData: Product[] = [
     title: "แจ็คเก็ตยีนส์",
     srcUrl: "/images/pic16.png",
     gallery: ["/images/pic16.png"],
-    price: 7.42,  // ราคาเป็นเงินบาทไทย (THB)
+    price: 7.42, // ราคาเป็นเงินบาทไทย (THB)
     discount: {
       amount: 0,
       percentage: 10,
@@ -157,7 +157,7 @@ export const relatedProductData: Product[] = [
     title: "รองเท้าผ้าใบ",
     srcUrl: "/images/pic17.png",
     gallery: ["/images/pic17.png"],
-    price: 7.42,  // ราคาเป็นเงินบาทไทย (THB)
+    price: 7.42, // ราคาเป็นเงินบาทไทย (THB)
     discount: {
       amount: 0,
       percentage: 25,
@@ -167,7 +167,6 @@ export const relatedProductData: Product[] = [
   },
 ];
 
-
 export default function Home() {
   return (
     <>
@@ -175,7 +174,7 @@ export default function Home() {
       <main className="my-[50px] sm:my-[72px]">
         <ProductListSec
           title="สินค้ามาใหม่"
-          data={newArrivalsData.map(product => ({
+          data={newArrivalsData.map((product) => ({
             ...product,
             price: product.price * exchangeRate,
             discount: {
@@ -191,7 +190,7 @@ export default function Home() {
         <div className="mb-[50px] sm:mb-20">
           <ProductListSec
             title="สินค้าขายดี"
-            data={topSellingData.map(product => ({
+            data={topSellingData.map((product) => ({
               ...product,
               price: product.price * exchangeRate,
               discount: {

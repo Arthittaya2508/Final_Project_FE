@@ -1,4 +1,4 @@
-'use Client'
+"use Client";
 import React from "react";
 import * as motion from "framer-motion/client";
 import { cn } from "../../lib/utils";
@@ -49,7 +49,7 @@ const ProductListSec = ({ title, data, viewAllLink }: ProductListSecProps) => {
             {data.map((product) => (
               <CarouselItem
                 key={product.id}
-                className="w-full max-w-[198px] sm:max-w-[295px] pl-0"
+                className="w-full max-w-[198px] sm:max-w-[295px] pl-0 rounded-lg shadow-lg overflow-hidden bg-white border border-gray-200 transition-all transform hover:scale-105 hover:shadow-xl p-5"
               >
                 <ProductCard data={product} />
               </CarouselItem>
@@ -60,9 +60,9 @@ const ProductListSec = ({ title, data, viewAllLink }: ProductListSecProps) => {
           <div className="w-full px-4 sm:px-0 text-center">
             <Link
               href={viewAllLink}
-              className="w-full inline-block sm:w-[218px] px-[54px] py-4 border rounded-full hover:bg-black hover:text-white text-black transition-all font-medium text-sm sm:text-base border-black/10"
+              className="w-full inline-block sm:w-[218px] px-[54px] py-4 border rounded-full hover:bg-elephant-800 hover:text-white text-black transition-all font-medium text-sm sm:text-base border-black/10"
             >
-              View All
+              ทั้งหมด
             </Link>
           </div>
         )}

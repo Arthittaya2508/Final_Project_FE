@@ -18,7 +18,7 @@ const DressStyle = () => {
             "text-[32px] leading-[36px] md:text-5xl mb-8 md:mb-14 capitalize",
           ])}
         >
-          Browse by desired Gender
+          เลือกสินค้าตามประเภท
         </motion.h2>
         <motion.div
           initial={{ y: "100px", opacity: 0 }}
@@ -28,12 +28,12 @@ const DressStyle = () => {
           className="flex flex-col sm:flex-row md:h-[289px] space-y-4 sm:space-y-0 sm:space-x-5 mb-4 sm:mb-5"
         >
           <DressStyleCard
-            title="Men"
+            title="ผู้ชาย"
             url="/user/shop#casual"
             className="md:max-w-[260px] lg:max-w-[360px] xl:max-w-[407px] h-[190px] bg-[url('/images/men.png')]"
           />
           <DressStyleCard
-            title="Women"
+            title="ผู้หญิง"
             url="/user/shop#formal"
             className="md:max-w-[684px] h-[190px] bg-[url('/images/women.png')]"
           />
@@ -46,12 +46,12 @@ const DressStyle = () => {
           className="flex flex-col sm:flex-row md:h-[289px] space-y-5 sm:space-y-0 sm:space-x-5"
         >
           <DressStyleCard
-            title="Kids"
+            title="เด็ก"
             url="/user/shop#party"
             className="md:max-w-[684px] h-[190px] bg-[url('/images/kids.png')]"
           />
           <DressStyleCard
-            title="Unisex"
+            title="อุปกรณ์กีฬา"
             url="/user/shop#gym"
             className="md:max-w-[260px] lg:max-w-[360px] xl:max-w-[407px] h-[190px] bg-[url('/images/unisex.png')]"
           />

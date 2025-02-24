@@ -10,11 +10,11 @@ import NewsLetterSection from "./NewsLetterSection";
 import LayoutSpacing from "./LayoutSpacing";
 
 const socialsData: SocialNetworks[] = [
-  {
-    id: 1,
-    icon: <FaTwitter />,
-    url: "https://twitter.com",
-  },
+  // {
+  //   id: 1,
+  //   icon: <FaTwitter />,
+  //   url: "https://twitter.com",
+  // },
   {
     id: 2,
     icon: <FaFacebookF />,
@@ -25,11 +25,11 @@ const socialsData: SocialNetworks[] = [
     icon: <FaInstagram />,
     url: "https://instagram.com",
   },
-  {
-    id: 4,
-    icon: <FaGithub />,
-    url: "https://github.com/mohammadoftadeh",
-  },
+  // {
+  //   id: 4,
+  //   icon: <FaGithub />,
+  //   url: "https://github.com/mohammadoftadeh",
+  // },
 ];
 
 const paymentBadgesData: PaymentBadge[] = [
@@ -74,11 +74,12 @@ const Footer = () => {
                   "text-[28px] lg:text-[32px] mb-6",
                 ])}
               >
-                เฟื่องฟู Sport
+                เฟื่องฟู สปอร์ต
               </h1>
               <p className="text-black/60 text-sm mb-9">
-                We have clothes that suits your style and which you’re proud to
-                wear. From women to men.
+                เราคัดสรรเสื้อผ้าและอุปกรณ์กีฬาเกรดคุณภาพที่ทำให้คุณภูมิใจไม่ว่าจะเป็นแฟชั่นสไตล์การออกไปข้างนอกหรือชุดกีฬาเฉพาะทาง
+                พร้อมด้วยอุปกรณ์กีฬาอย่างรองเท้า, ชุดออกกำลังกาย, ถุงมือ
+                ที่ช่วยเพิ่มประสิทธิภาพในการเล่นกีฬา.
               </p>
               <div className="flex items-center">
                 {socialsData.map((social) => (
@@ -116,7 +117,7 @@ const Footer = () => {
                 href="https://www.figma.com/@hamzauix"
                 className="text-black font-medium"
               >
-                 jay'ping
+                jay'ping
               </Link>
             </p>
             {/* <div className="flex items-center">
