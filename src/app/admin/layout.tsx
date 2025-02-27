@@ -1,6 +1,6 @@
 "use client";
-import Navbar from "./components/Navbar";
-import Sidebar from "./components/Sidebar";
+import Navbar from "@/components/ui/Navbar";
+import Sidebar from "@/components/ui/Sidebar";
 import "../../styles/globals.css";
 
 export default function AdminLayout({
@@ -9,7 +9,6 @@ export default function AdminLayout({
   children: React.ReactNode;
 }>) {
   return (
-    
     <html lang="en">
       <body>
         {/* Sidebar */}
@@ -31,4 +30,3 @@ export default function AdminLayout({
     </html>
   );
 }
-

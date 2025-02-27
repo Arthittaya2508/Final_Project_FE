@@ -1,80 +1,86 @@
-'use client'
-import React, { useState } from 'react'
-import Image from 'next/image'
-import { TbHome, TbBriefcase, TbLogout, TbChevronDown, TbChevronUp } from 'react-icons/tb'
-import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+"use client";
+import React, { useState } from "react";
+import Image from "next/image";
+import {
+  TbHome,
+  TbBriefcase,
+  TbLogout,
+  TbChevronDown,
+  TbChevronUp,
+} from "react-icons/tb";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 const active =
-  'relative flex h-11 flex-row items-center border-transparent rounded bg-primary-200 text-primary-900'
+  "relative flex h-11 flex-row items-center border-transparent rounded bg-primary-200 text-primary-900";
 const inactive =
-  'relative flex h-11 flex-row items-center border-transparent text-white hover:rounded hover:bg-primary-200 hover:text-primary-900 focus:outline-none'
+  "relative flex h-11 flex-row items-center border-transparent text-white hover:rounded hover:bg-primary-200 hover:text-primary-900 focus:outline-none";
 
 const logoData = {
-  src: '/images/cat.jpg',
-  alt: 'Logo',
+  src: "/images/cat.jpg",
+  alt: "Logo",
   height: 80,
   width: 80,
-}
+};
 
 const menuItems = [
   {
-    label: 'Dashboard',
+    label: "Dashboard",
     icon: <TbHome />,
-    href: '/',
+    href: "/admin/dashboard",
   },
   {
-    label: 'ข้อมูลสินค้า',
+    label: "ข้อมูลสินค้า",
     icon: <TbBriefcase />,
-    href: '#',
+    href: "#",
     submenu: [
-      { label: 'ข้อมูลสินค้า', href: '/admin/page/products' },
-      { label: 'ข้อมูลประเภท', href: '/product/category' },
-      { label: 'ข้อมูลแบรนด์', href: '/product/brand' },
-      { label: 'ข้อมูลสี', href: '/product/color' },
-      { label: 'ข้อมูลขนาด', href: '/product/size' },
-      { label: 'ข้อมูลเพศ', href: '/product/gender' },
+      { label: "ข้อมูลสินค้า", href: "/admin/products" },
+      { label: "ข้อมูลประเภท", href: "/admin/product-detail" },
+      { label: "ข้อมูลแบรนด์", href: "/admin/product-detail" },
+      { label: "ข้อมูลสี", href: "/admin/product-detail" },
+      { label: "ข้อมูลขนาด", href: "/admin/product-detail" },
+      { label: "ข้อมูลเพศ", href: "/admin/product-detail" },
     ],
   },
   {
-    label: 'ข้อมูลขนส่ง',
+    label: "ข้อมูลขนส่ง",
     icon: <TbBriefcase />,
-    href: '/transport',
+    href: "/admin/transport",
   },
   {
-    label: 'ข้อมูลลูกค้า',
+    label: "ข้อมูลลูกค้า",
     icon: <TbLogout />,
-    href: '/customer',
+    href: "/admin/customer",
   },
   {
-    label: 'ข้อมูลพนักงาน',
+    label: "ข้อมูลพนักงาน",
     icon: <TbHome />,
-    href: '/employee',
+    href: "/admin/employee",
   },
   {
-    label: 'ข้อมูลรายงาน',
+    label: "ข้อมูลรายงาน",
     icon: <TbBriefcase />,
-    href: '#',
+    href: "#",
     submenu: [
-      { label: 'ข้อมูลรายงาน', href: '/product/category' },
-      { label: 'ข้อมูลรายเดือน', href: '/product/brand' },
+      { label: "ข้อมูลรายงาน", href: "/product/category" },
+      { label: "ข้อมูลรายเดือน", href: "/product/brand" },
     ],
   },
   {
-    label: 'logout',
+    label: "logout",
     icon: <TbLogout />,
-    href: '/customer',
+    href: "/customer",
     isBottom: true,
   },
-]
+];
 
 const Sidebar = () => {
-  const [openDropdown, setOpenDropdown] = useState<string | null>(null)
-  const currentPath = usePathname()
+  const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+  const currentPath = usePathname();
 
   const toggleDropdown = (label: string) => {
-    setOpenDropdown(openDropdown === label ? null : label)
-  }
+    setOpenDropdown(openDropdown === label ? null : label);
+  };
 
   return (
     <>
@@ -95,7 +101,7 @@ const Sidebar = () => {
         <div className="w-full flex-grow">
           <ul className="flex flex-col px-4 py-4">
             {menuItems
-              .filter(item => !item.isBottom)
+              .filter((item) => !item.isBottom)
               .map((item, index) => (
                 <li key={index} className="w-full">
                   {item.submenu ? (
@@ -166,7 +172,7 @@ const Sidebar = () => {
         {/* Bottom Items */}
         <ul className="mb-10 px-4 w-full">
           {menuItems
-            .filter(item => item.isBottom)
+            .filter((item) => item.isBottom)
             .map((item, index) => (
               <li key={index}>
                 <Link legacyBehavior href={item.href}>
@@ -184,7 +190,7 @@ const Sidebar = () => {
         </ul>
       </div>
     </>
-  )
-}
+  );
+};
 
-export default Sidebar
+export default Sidebar;

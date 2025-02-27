@@ -4,9 +4,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { Product } from "../../types/product.types";
 
-// อัตราแลกเปลี่ยน (USD -> THB)
-const exchangeRate = 35;
-
 const formatPrice = (price: number) => {
   return new Intl.NumberFormat("th-TH", {
     style: "currency",
@@ -35,25 +32,12 @@ const ProductCard = ({ data }: ProductCardProps) => {
         />
       </div>
       <strong className="text-black xl:text-xl">{data.title}</strong>
-            {/* เพิ่มรายละเอียดสินค้า */}
-            <div className="text-sm text-gray-600 mt-2">
+      {/* เพิ่มรายละเอียดสินค้า */}
+      <div className="text-sm text-gray-600 mt-2">
         <p>{data.description}</p>
       </div>
-      {/* <div className="flex items-end mb-1 xl:mb-2">
-        <Rating
-          initialValue={data.rating}
-          allowFraction
-          SVGclassName="inline-block"
-          emptyClassName="fill-gray-50"
-          size={19}
-          readonly
-        />
-        <span className="text-black text-xs xl:text-sm ml-[11px] xl:ml-[13px] pb-0.5 xl:pb-0">
-          {data.rating.toFixed(1)}
-          <span className="text-black/60">/5</span>
-        </span>
-      </div> */}
       <div className="flex items-center space-x-[5px] xl:space-x-2.5">
+        {/* แสดงราคาโดยไม่แปลงจาก USD */}
         {data.discount.percentage > 0 ? (
           <span className="font-bold text-black text-xl xl:text-2xl">
             {formatPrice(
@@ -86,7 +70,7 @@ const ProductCard = ({ data }: ProductCardProps) => {
         ) : (
           data.discount.amount > 0 && (
             <span className="font-medium text-[10px] xl:text-xs py-1.5 px-3.5 rounded-full bg-[#FF3333]/10 text-[#FF3333]">
-              {`-$${data.discount.amount}`}
+              {`-${data.discount.amount}`}
             </span>
           )
         )}

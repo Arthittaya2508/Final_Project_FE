@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { cn } from "../../../../lib/utils";
 import Link from "next/link";
 import { NavMenu } from "../navbar.types";
@@ -13,7 +13,7 @@ import Image from "next/image";
 import InputGroup from "../../../../components/ui/input-group";
 import ResTopNavbar from "./ResTopNavbar";
 import CartBtn from "./CartBtn";
-import ModalAuth from "../../../../components/ui/ModalAuth"; // Assume this is your Modal Component
+import RegisterModal from "./RegisterModal"; // Import ModalRegister component
 
 const data: NavMenu = [
   {
@@ -54,13 +54,6 @@ const data: NavMenu = [
     url: "/user/shop#on-sale",
     children: [],
   },
-  // {
-  //   id: 3,
-  //   type: "MenuItem",
-  //   label: "New Arrivals",
-  //   url: "/user/shop#new-arrivals",
-  //   children: [],
-  // },
   {
     id: 4,
     type: "MenuItem",
@@ -71,14 +64,13 @@ const data: NavMenu = [
 ];
 
 const TopNavbar = () => {
-  const [isModalOpen, setIsModalOpen] = useState(false); // Add state for modal
-
-  const handleOpenModal = () => {
-    setIsModalOpen(true); // Open the modal
-  };
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isLoginForm, setIsLoginForm] = useState(true);
+  const [registerModal, setRegisterModal] = useState(false);
 
   const handleCloseModal = () => {
-    setIsModalOpen(false); // Close the modal
+    setIsModalOpen(false);
+    setIsLoginForm(true); // เพิ่มบรรทัดนี้เพื่อกลับไปที่ Login
   };
 
   return (
@@ -90,14 +82,9 @@ const TopNavbar = () => {
           </div>
           <Link
             href="/user"
-            className={cn([
-              // integralCF.className,
-              "text-2xl lg:text-[32px] mb-2 mr-3 lg:mr-10",
-            ])}
+            className={cn(["text-2xl lg:text-[32px] mb-2 mr-3 lg:mr-10"])}
           >
             FF_Shop
-            {/* <img src="/public/logo/logo.png" alt="" /> */}
-            {/* เฟื่องฟู Sport */}
           </Link>
         </div>
         <NavigationMenu className="hidden md:flex mr-2 lg:mr-7">
@@ -114,7 +101,7 @@ const TopNavbar = () => {
             ))}
           </NavigationMenuList>
         </NavigationMenu>
-        <InputGroup className="hidden md:flex bg-[#F0F0F0] mr-3 lg:mr-10">
+        <InputGroup className="hidden md:flex bg-te-papa-green-50 mr-3 lg:mr-10">
           <InputGroup.Text>
             <Image
               priority
@@ -133,20 +120,12 @@ const TopNavbar = () => {
           />
         </InputGroup>
         <div className="flex items-center">
-          <Link href="/user/search" className="block md:hidden mr-[14px] p-1">
-            <Image
-              priority
-              src="/icons/search-black.svg"
-              height={100}
-              width={100}
-              alt="search"
-              className="max-w-[22px] max-h-[22px]"
-            />
-          </Link>
           <CartBtn />
-          <button onClick={handleOpenModal} className="p-1">
-            {" "}
-            {/* Open Modal on click */}
+          <button
+            onClick={() => setIsModalOpen(true)}
+            className="p-1"
+            aria-label="User login"
+          >
             <Image
               priority
               src="/icons/user.svg"
@@ -159,8 +138,53 @@ const TopNavbar = () => {
         </div>
       </div>
 
-      {/* Modal component */}
-      <ModalAuth isOpen={isModalOpen} onClose={handleCloseModal} />
+      {/* Login Modal */}
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+          <div className="bg-white p-6 rounded-lg w-[300px] md:w-[400px] relative">
+            <h2 className="text-center text-xl font-semibold mb-4">
+              {isLoginForm ? "Login" : "Register"}
+            </h2>
+            {isLoginForm ? (
+              <form>
+                <input
+                  type="email"
+                  placeholder="Email"
+                  className="w-full p-2 border border-gray-300 rounded-md mb-4"
+                  required
+                />
+                <input
+                  type="password"
+                  placeholder="Password"
+                  className="w-full p-2 border border-gray-300 rounded-md mb-4"
+                  required
+                />
+                <p
+                  className="text-blue-500 cursor-pointer text-center mb-4"
+                  onClick={() => setIsLoginForm(false)}
+                >
+                  สมัครสมาชิก
+                </p>
+                <button
+                  type="submit"
+                  className="w-full bg-blue-500 text-white p-2 rounded-md"
+                >
+                  Login
+                </button>
+              </form>
+            ) : (
+              <RegisterModal isOpen={isModalOpen} onClose={handleCloseModal} />
+            )}
+            <button
+              onClick={handleCloseModal}
+              className="absolute top-2 right-2 text-gray-600"
+              title="Close Modal"
+            >
+              ×
+            </button>
+          </div>
+        </div>
+      )}
     </nav>
   );
 };

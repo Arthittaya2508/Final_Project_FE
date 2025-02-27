@@ -1,6 +1,6 @@
 "use client";
-import Button from "../../../components/Buttons";
-import SandBoxLayout from "../../../components/Layout/SandboxLayout";
+import Button from "../../../../../components/ui/Buttons";
+import SandBoxLayout from "../../../../../components/ui/Layout/SandboxLayout";
 // import useAxiosInstance from "@/hooks/use-axios-instance";
 import React, { FC } from "react";
 import { FiPlusCircle } from "react-icons/fi";

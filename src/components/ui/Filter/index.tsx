@@ -9,7 +9,7 @@ export const status = [
   { key: "cancel", label: "ที่ยกเลิก" },
 ];
 
-export default function App() {
+export default function StatusFilter() {
   const variants = ["flat"];
 
   return (

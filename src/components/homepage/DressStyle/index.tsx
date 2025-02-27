@@ -7,7 +7,7 @@ import DressStyleCard from "./DressStyleCard";
 const DressStyle = () => {
   return (
     <div className="px-4 xl:px-0">
-      <section className="max-w-frame mx-auto bg-[#F0F0F0] px-6 pb-6 pt-10 md:p-[70px] rounded-[40px] text-center">
+      <section className="max-w-frame mx-auto bg-te-papa-green-50 px-6 pb-6 pt-10 md:p-[70px] rounded-[40px] text-center">
         <motion.h2
           initial={{ y: "100px", opacity: 0 }}
           whileInView={{ y: "0", opacity: 1 }}
@@ -30,12 +30,12 @@ const DressStyle = () => {
           <DressStyleCard
             title="ผู้ชาย"
             url="/user/shop#casual"
-            className="md:max-w-[260px] lg:max-w-[360px] xl:max-w-[407px] h-[190px] bg-[url('/images/men.png')]"
+            className="md:max-w-[260px] lg:max-w-[360px] xl:max-w-[407px] h-[190px] bg-[url('/images/men.jpg')]"
           />
           <DressStyleCard
             title="ผู้หญิง"
             url="/user/shop#formal"
-            className="md:max-w-[684px] h-[190px] bg-[url('/images/women.png')]"
+            className="md:max-w-[684px] h-[190px] bg-[url('/images/women.jpg')]"
           />
         </motion.div>
         <motion.div
@@ -48,12 +48,12 @@ const DressStyle = () => {
           <DressStyleCard
             title="เด็ก"
             url="/user/shop#party"
-            className="md:max-w-[684px] h-[190px] bg-[url('/images/kids.png')]"
+            className="md:max-w-[684px] h-[190px] bg-[url('/images/kids.jpg')]"
           />
           <DressStyleCard
             title="อุปกรณ์กีฬา"
             url="/user/shop#gym"
-            className="md:max-w-[260px] lg:max-w-[360px] xl:max-w-[407px] h-[190px] bg-[url('/images/unisex.png')]"
+            className="md:max-w-[260px] lg:max-w-[360px] xl:max-w-[407px] h-[190px] bg-[url('/images/sport.jpg')]"
           />
         </motion.div>
       </section>

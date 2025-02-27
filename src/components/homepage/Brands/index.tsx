@@ -2,42 +2,31 @@ import Image from "next/image";
 import React from "react";
 
 const brandsData: { id: string; srcUrl: string }[] = [
-  {
-    id: "versace",
-    srcUrl: "/icons/versace-logo.svg",
-  },
-  {
-    id: "zara",
-    srcUrl: "/icons/zara-logo.svg",
-  },
-  {
-    id: "gucci",
-    srcUrl: "/icons/gucci-logo.svg",
-  },
-  {
-    id: "prada",
-    srcUrl: "/icons/prada-logo.svg",
-  },
-  {
-    id: "calvin-klein",
-    srcUrl: "/icons/calvin-klein-logo.svg",
-  },
+  { id: "poligan", srcUrl: "/icons/poligan.png" },
+  { id: "lugust", srcUrl: "/icons/lugust.png" },
+  { id: "grand", srcUrl: "/icons/grand.png" },
+  { id: "warrix", srcUrl: "/icons/warrix.png" },
+  { id: "ryu", srcUrl: "/icons/ryu.png" },
 ];
 
 const Brands = () => {
   return (
-    <div className="bg-black">
-      <div className="max-w-frame mx-auto flex flex-wrap items-center justify-center md:justify-between py-5 md:py-0 sm:px-4 xl:px-0 space-x-7">
+    <div className="bg-te-papa-green-900">
+      <div className="max-w-frame mx-auto flex flex-wrap items-center justify-center md:justify-between py-5 md:py-0 sm:px-4 xl:px-0 gap-7">
         {brandsData.map((brand) => (
-          <Image
+          <div
             key={brand.id}
-            priority
-            src={brand.srcUrl}
-            height={0}
-            width={0}
-            alt={brand.id}
-            className="h-auto w-auto max-w-[116px] lg:max-w-48 max-h-[26px] lg:max-h-9 my-5 md:my-11"
-          />
+            className="w-[120px] h-[ุ80px] flex items-center justify-center"
+          >
+            <Image
+              priority
+              src={brand.srcUrl}
+              width={120} // กำหนดขนาดให้เท่ากัน
+              height={40}
+              alt={brand.id}
+              className="object-contain"
+            />
+          </div>
         ))}
       </div>
     </div>

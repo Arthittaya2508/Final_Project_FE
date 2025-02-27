@@ -10,9 +10,7 @@ import Tabs from "../../../../../components/product-page/Tabs";
 import { Product } from "../../../../../types/product.types";
 import { notFound } from "next/navigation";
 
-// อัตราแลกเปลี่ยน (USD -> THB)
-const exchangeRate = 35;
-
+// ฟังก์ชันนี้ใช้แสดงราคาภาษาไทย (THB)
 const formatPrice = (price: number) => {
   return new Intl.NumberFormat("th-TH", {
     style: "currency",
@@ -48,10 +46,11 @@ export default function ProductPage({
           <Header
             data={{
               ...productData,
-              price: productData.price * exchangeRate, // แปลงราคาสินค้าเป็น THB
+              // เก็บราคาเป็น number และแสดงผลด้วย formatPrice
+              price: productData.price,
               discount: {
                 ...productData.discount,
-                amount: productData.discount.amount * exchangeRate, // แปลงส่วนลดเป็น THB
+                amount: productData.discount.amount,
               },
             }}
           />
@@ -63,10 +62,11 @@ export default function ProductPage({
           title="สินค้าที่คล้ายกัน"
           data={relatedProductData.map((product) => ({
             ...product,
-            price: product.price * exchangeRate, // แปลงราคาสินค้าเป็น THB
+            // เก็บราคาเป็น number และแสดงผลด้วย formatPrice
+            price: product.price,
             discount: {
               ...product.discount,
-              amount: product.discount.amount * exchangeRate, // แปลงส่วนลดเป็น THB
+              amount: product.discount.amount,
             },
           }))}
         />

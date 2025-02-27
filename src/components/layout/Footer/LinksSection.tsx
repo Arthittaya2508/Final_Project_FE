@@ -1,139 +1,34 @@
-import React from "react";
-import { FooterLinks } from "./footer.types";
-import Link from "next/link";
-import { cn } from "../../../lib/utils";
+// import React from "react";
 
-const footerLinksData: FooterLinks[] = [
-  {
-    id: 1,
-    title: "company",
-    children: [
-      {
-        id: 11,
-        label: "about",
-        url: "#",
-      },
-      {
-        id: 12,
-        label: "features",
-        url: "#",
-      },
-      {
-        id: 13,
-        label: "works",
-        url: "#",
-      },
-      {
-        id: 14,
-        label: "career",
-        url: "#",
-      },
-    ],
-  },
-  {
-    id: 2,
-    title: "help",
-    children: [
-      {
-        id: 21,
-        label: "customer support",
-        url: "#",
-      },
-      {
-        id: 22,
-        label: "delivery details",
-        url: "#",
-      },
-      {
-        id: 23,
-        label: "terms & conditions",
-        url: "#",
-      },
-      {
-        id: 24,
-        label: "privacy policy",
-        url: "#",
-      },
-    ],
-  },
-  {
-    id: 3,
-    title: "faq",
-    children: [
-      {
-        id: 31,
-        label: "account",
-        url: "#",
-      },
-      {
-        id: 32,
-        label: "manage deliveries",
-        url: "#",
-      },
-      {
-        id: 33,
-        label: "orders",
-        url: "#",
-      },
-      {
-        id: 34,
-        label: "payments",
-        url: "#",
-      },
-    ],
-  },
-  {
-    id: 4,
-    title: "resources",
-    children: [
-      {
-        id: 41,
-        label: "Free eBooks",
-        url: "#",
-      },
-      {
-        id: 42,
-        label: "development tutorial",
-        url: "#",
-      },
-      {
-        id: 43,
-        label: "How to - Blog",
-        url: "#",
-      },
-      {
-        id: 44,
-        label: "youtube playlist",
-        url: "#",
-      },
-    ],
-  },
-];
+// const StoreInfoSection = () => {
+//   return (
+//     <div className="mt-5 flex flex-col md:flex-row items-center justify-between">
+//       {/* ข้อมูลที่อยู่ของร้าน */}
+//       <div className="  text-sm md:text-base text-black/80">
+//         <h3 className="font-medium text-sm md:text-base uppercase tracking-widest mb-6">
+//           Our Store Location
+//         </h3>
+//         <p className="mb-2">
+//           Address:{" "}
+//           <a
+//             href="https://www.google.com/maps/place/%E0%B9%80%E0%B8%94%E0%B8%AD%E0%B8%B0%E0%B8%84%E0%B8%AD%E0%B8%99%E0%B8%99%E0%B8%B1%E0%B8%84+%E0%B8%9A%E0%B8%B2%E0%B8%87%E0%B8%99%E0%B8%B2-%E0%B8%AA%E0%B8%B8%E0%B8%A7%E0%B8%A3%E0%B8%A3%E0%B8%93%E0%B8%A0%E0%B8%B9%E0%B8%A1%E0%B8%B4+(The+Connect+Bangna-Suvarnabhumi)/@13.6068051,100.7509132,17z/data=!4m14!1m7!3m6!1s0x311d6742eee15f7f:0x5c7f9dc54710e208!2z4LmA4LiU4Lit4Liw4LiE4Lit4LiZ4LmA4LiZ4LiEIOC4muC4suC4h-C4meC4si3guKrguLjguKfguKPguKPguJPguKDguLnguKHguLQgKFRoZSBDb25uZWN0IEJhbmduYS1TdXZhcm5hYmh1bWkp!8m2!3d13.6068051!4d100.7509132!16s%2Fg%2F11f3gbydsj!3m5!1s0x311d6742eee15f7f:0x5c7f9dc54710e208!8m2!3d13.6068051!4d100.7509132!16s%2Fg%2F11f3gbydsj?hl=th&entry=ttu&g_ep=EgoyMDI1MDIyNC4wIKXMDSoASAFQAw%3D%3D"
+//             className="text-blue-600 underline"
+//             target="_blank"
+//             rel="noopener noreferrer"
+//           >
+//             เดอะคอนเนค บางนา-สุวรรณภูมิ (The Connect Bangna-Suvarnabhumi)
+//           </a>
+//         </p>
+//         <p className="mb-2">Phone: +1 (123) 456-7890</p>
+//         <p>
+//           Email:{" "}
+//           <a href="mailto:info@store.com" className="text-blue-600">
+//             info@store.com
+//           </a>
+//         </p>
+//       </div>
+//     </div>
+//   );
+// };
 
-const LinksSection = () => {
-  return (
-    <>
-      {footerLinksData.map((item) => (
-        <section className="flex flex-col mt-5" key={item.id}>
-          <h3 className="font-medium text-sm md:text-base uppercase tracking-widest mb-6">
-            {item.title}
-          </h3>
-          {item.children.map((link) => (
-            <Link
-              href={link.url}
-              key={link.id}
-              className={cn([
-                link.id !== 41 && link.id !== 43 && "capitalize",
-                "text-black/60 text-sm md:text-base mb-4 w-fit",
-              ])}
-            >
-              {link.label}
-            </Link>
-          ))}
-        </section>
-      ))}
-    </>
-  );
-};
-
-export default LinksSection;
+// export default StoreInfoSection;

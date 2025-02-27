@@ -1,10 +1,10 @@
 "use client";
 
-import Button from "../../../components/Buttons";
-import Pagination from "../../../components/Pagination";
-import Table from "../../../components/Table";
-import Text from "../../../components/Text";
-import { TooltipIcon } from "../../../components/Tooltip/tooltipicons";
+import Button from "@/components/ui/Buttons";
+import Pagination from "@/components/ui/Pagination/index";
+import Table from "@/components/ui/Table";
+import Text from "@/components/ui/Text";
+import TooltipIcon from "@/components/ui/Tooltip";
 import { columns } from "../../../../../lib/data";
 import {
   Selection,
@@ -123,7 +123,7 @@ const TableSection: FC = () => {
                   className="text-danger-600"
                   onClick={handleMultipleDelete}
                 >
-                  <TooltipIcon icon={<FaRegTrashCan />} tooltip="Delete" />
+                  {/* <TooltipIcon icon={<FaRegTrashCan />} tooltip="Delete" /> */}
                 </Button>
               </div>
             </div>

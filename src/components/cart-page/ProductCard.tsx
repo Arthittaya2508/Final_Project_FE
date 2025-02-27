@@ -31,10 +31,20 @@ type ProductCardProps = {
 const ProductCard = ({ data }: ProductCardProps) => {
   const dispatch = useAppDispatch();
 
+  // คำนวณราคาหลังส่วนลด (ทั้งแบบ percentage และ amount)
+  const calculateDiscountedPrice = () => {
+    if (data.discount.percentage > 0) {
+      return data.price - (data.price * data.discount.percentage) / 100;
+    } else if (data.discount.amount > 0) {
+      return data.price - data.discount.amount;
+    }
+    return data.price;
+  };
+
   return (
     <div className="flex items-start space-x-4">
       <Link
-        href={`/user/shop/product/{data.id}/{data.name.split(" ").join("-")}`}
+        href={`/user/shop/product/${data.id}/${data.name.split(" ").join("-")}`}
         className="bg-[#F0EEED] rounded-lg w-full min-w-[100px] max-w-[100px] sm:max-w-[124px] aspect-square overflow-hidden"
       >
         <Image
@@ -49,7 +59,9 @@ const ProductCard = ({ data }: ProductCardProps) => {
       <div className="flex w-full self-stretch flex-col">
         <div className="flex items-center justify-between">
           <Link
-            href={`/user/shop/product/{data.id}/{data.name.split(" ").join("-")}`}
+            href={`/user/shop/product/${data.id}/${data.name
+              .split(" ")
+              .join("-")}`}
             className="text-black font-bold text-base xl:text-xl"
           >
             {data.name}
@@ -85,41 +97,27 @@ const ProductCard = ({ data }: ProductCardProps) => {
         </div>
         <div className="flex items-center flex-wrap justify-between">
           <div className="flex items-center space-x-[5px] xl:space-x-2.5">
-            {data.discount.percentage > 0 ? (
-              <span className="font-bold text-black text-xl xl:text-2xl">
-                {formatPrice(
-                  (data.price - (data.price * data.discount.percentage) / 100) * exchangeRate
-                )}
-              </span>
-            ) : data.discount.amount > 0 ? (
-              <span className="font-bold text-black text-xl xl:text-2xl">
-                {formatPrice((data.price - data.discount.amount) * exchangeRate)}
-              </span>
-            ) : (
-              <span className="font-bold text-black text-xl xl:text-2xl">
-                {formatPrice(data.price * exchangeRate)}
+            {/* แสดงราคาและส่วนลด */}
+            <span className="font-bold text-black text-xl xl:text-2xl">
+              {formatPrice(calculateDiscountedPrice())}
+            </span>
+            {/* แสดงราคาตัวเดิมที่ขีดทิ้ง */}
+            {(data.discount.percentage > 0 || data.discount.amount > 0) && (
+              <span className="font-bold text-black/40 line-through text-xl xl:text-2xl">
+                {formatPrice(data.price)}
               </span>
             )}
+            {/* แสดงเปอร์เซ็นต์ส่วนลด */}
             {data.discount.percentage > 0 && (
-              <span className="font-bold text-black/40 line-through text-xl xl:text-2xl">
-                {formatPrice(data.price * exchangeRate)}
-              </span>
-            )}
-            {data.discount.amount > 0 && (
-              <span className="font-bold text-black/40 line-through text-xl xl:text-2xl">
-                {formatPrice(data.price * exchangeRate)}
-              </span>
-            )}
-            {data.discount.percentage > 0 ? (
               <span className="font-medium text-[10px] xl:text-xs py-1.5 px-3.5 rounded-full bg-[#FF3333]/10 text-[#FF3333]">
-                {`-{data.discount.percentage}%`}
+                {`-${data.discount.percentage}%`}
               </span>
-            ) : (
-              data.discount.amount > 0 && (
-                <span className="font-medium text-[10px] xl:text-xs py-1.5 px-3.5 rounded-full bg-[#FF3333]/10 text-[#FF3333]">
-                  {`-{data.discount.amount}`}
-                </span>
-              )
+            )}
+            {/* แสดงส่วนลดที่เป็นจำนวนเงิน */}
+            {data.discount.amount > 0 && (
+              <span className="font-medium text-[10px] xl:text-xs py-1.5 px-3.5 rounded-full bg-[#FF3333]/10 text-[#FF3333]">
+                {`-฿${data.discount.amount}`}
+              </span>
             )}
           </div>
           <CartCounter
