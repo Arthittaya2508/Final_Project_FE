@@ -7,17 +7,13 @@ import Text from "@/components/ui/Text";
 import TooltipIcon from "@/components/ui/Tooltip";
 import { columns } from "../../../../../lib/data";
 import {
-  Selection,
   TableBody,
   TableCell,
   TableColumn,
   TableHeader,
   TableRow,
 } from "@heroui/react";
-import Image from "next/image";
 import React, { FC, useMemo, useState, useEffect } from "react";
-import { FaRegTrashCan } from "react-icons/fa6";
-import { FiPlusCircle } from "react-icons/fi";
 
 // ฟังก์ชันเพื่อดึงข้อมูลจาก API /orders
 const fetchOrders = async () => {
@@ -50,7 +46,6 @@ const fetchUsers = async () => {
 };
 
 const TableSection: FC = () => {
-  const [selectedKeys, setSelectedKeys] = useState<Selection>(new Set([]));
   const [orders, setOrders] = useState<any[]>([]); // เก็บข้อมูลจาก API
   const [users, setUsers] = useState<any[]>([]); // เก็บข้อมูลผู้ใช้จาก API
   const [isLoading, setIsLoading] = useState(true); // การแสดงสถานะการโหลด
@@ -68,20 +63,6 @@ const TableSection: FC = () => {
     getData();
   }, []);
 
-  // ฟังก์ชันลบข้อมูลหลายรายการ
-  const handleMultipleDelete = () => {
-    if (selectedKeys === "all") {
-      setOrders([]); // ลบข้อมูลทั้งหมด
-    } else {
-      const selectedID = Array.from(selectedKeys);
-      setOrders(
-        (prev) =>
-          prev.filter((order) => !selectedID.includes(order.user_id.toString())) // ลบเฉพาะรายการที่เลือก
-      );
-    }
-    setSelectedKeys(new Set());
-  };
-
   const isEmpty = orders.length === 0; // ตรวจสอบว่าข้อมูลว่างหรือไม่
   const [rowsPerPage] = React.useState(10);
   const [page, setPage] = React.useState(1);
@@ -96,8 +77,8 @@ const TableSection: FC = () => {
 
   // ฟังก์ชันเพื่อหา user ที่ตรงกับ user_id
   const getUserFullName = (userId: number) => {
-    const user = users.find((user) => user.id === Number(userId));
-    return user ? `${user.name} ${user.lastname}` : "ยังไม่ขึ้นทำให้มันขึ้นสิ"; // คืนค่าชื่อและนามสกุล
+    const user = users.find((user) => user.user_id === userId); // เปลี่ยนจาก user_id เป็น user.user_id
+    return user ? `${user.name} ${user.lastname}` : "ไม่พบข้อมูลผู้ใช้"; // ใช้ user.name และ user.lastname
   };
 
   // แสดงข้อความโหลดขณะดึงข้อมูล
@@ -108,33 +89,10 @@ const TableSection: FC = () => {
   return (
     <div className="mt-2">
       <Table
-        topContent={
-          selectedKeys === "all" || selectedKeys.size > 0 ? (
-            <div className="flex w-full items-center justify-between bg-danger-50 p-2 px-4">
-              <Text variant="text-table" className="text-danger-600">
-                {selectedKeys === "all"
-                  ? "All rows selected"
-                  : `${selectedKeys.size} selected`}
-              </Text>
-              <div className="flex justify-end">
-                <Button
-                  size="icon"
-                  isIconOnly={true}
-                  className="text-danger-600"
-                  onClick={handleMultipleDelete}
-                >
-                  {/* <TooltipIcon icon={<FaRegTrashCan />} tooltip="Delete" /> */}
-                </Button>
-              </div>
-            </div>
-          ) : (
-            <></>
-          )
-        }
+        topContent={<></>} // ไม่ต้องการแสดงส่วนของการเลือกหลายรายการ
         aria-label="table"
         color="danger"
         radius="lg"
-        selectionMode="multiple"
         emptyWrapper={isEmpty}
         bottomContentPlacement="outside"
         bottomContent={
@@ -157,8 +115,6 @@ const TableSection: FC = () => {
           td: "p-4",
           tbody: "!p-0",
         }}
-        onSelectionChange={setSelectedKeys}
-        selectedKeys={selectedKeys}
       >
         <TableHeader className="bg-primary-300" columns={columns}>
           {(column) => (
@@ -171,7 +127,7 @@ const TableSection: FC = () => {
             <TableRow key={order.order_id}>
               <TableCell>{order.order_id}</TableCell>
               <TableCell>{getUserFullName(order.user_id)}</TableCell>
-              {/* แสดงชื่อและนามสกุล */}
+              {/* แสดงชื่อและนามสกุลของผู้ใช้ */}
               <TableCell>{order.address}</TableCell>
               <TableCell>
                 {new Date(order.order_date).toLocaleDateString()}

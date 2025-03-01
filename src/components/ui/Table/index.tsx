@@ -1,5 +1,5 @@
 import { extendVariants, Table as TableHeroUI } from "@heroui/react";
-import type { TableProps, TableBody } from "@heroui/react";
+import type { TableProps } from "@heroui/react";
 import React, { FC, useMemo, forwardRef } from "react";
 
 const ExtendedTable = extendVariants(TableHeroUI, {
@@ -62,26 +62,10 @@ interface Props extends TableProps {
 }
 
 const Table = forwardRef<HTMLElement, Props>(({ children, ...rest }, ref) => {
-  const checkboxClasses = useMemo(() => {
-    switch (rest.color) {
-      case "danger":
-        return {
-          wrapper: "before:border-primary-600 bg-white",
-        };
-
-      default:
-        return rest.checkboxesProps?.classNames;
-    }
-  }, [rest.color, rest.checkboxesProps?.classNames]);
-
   return (
     <ExtendedTable
       {...rest}
       ref={ref as unknown as never} // 🔧 ใช้ type assertion แก้ปัญหา ref
-      checkboxesProps={{
-        ...rest.checkboxesProps,
-        classNames: checkboxClasses,
-      }}
     >
       {children}
     </ExtendedTable>

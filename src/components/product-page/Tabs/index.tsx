@@ -32,7 +32,7 @@ const Tabs = () => {
 
   return (
     <div>
-      <div className="flex items-center mb-6 sm:mb-8 overflow-x-auto">
+      {/* <div className="flex items-center mb-6 sm:mb-8 overflow-x-auto">
         {tabBtnData.map((tab) => (
           <Button
             key={tab.id}
@@ -49,12 +49,12 @@ const Tabs = () => {
             {tab.label}
           </Button>
         ))}
-      </div>
-      <div className="mb-12 sm:mb-16">
+      </div> */}
+      {/* <div className="mb-12 sm:mb-16">
         {active === 1 && <ProductDetailsContent />}
         {active === 2 && <ReviewsContent />}
         {active === 3 && <FaqContent />}
-      </div>
+      </div> */}
     </div>
   );
 };

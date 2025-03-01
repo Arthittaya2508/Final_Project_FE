@@ -1,12 +1,7 @@
-"use client";
 import Button from "@/components/ui/Buttons";
 import Pagination from "@/components/ui/Pagination/index";
 import Table from "@/components/ui/Table";
-import Text from "@/components/ui/Text";
-import { TooltipIcon } from "@/components/ui/Tooltip/tooltipicons";
-import { product, productData } from "../../../lib/data";
 import {
-  Selection,
   TableBody,
   TableCell,
   TableColumn,
@@ -14,95 +9,105 @@ import {
   TableRow,
 } from "@heroui/react";
 import React, { FC, useMemo, useState, useEffect } from "react";
-import { FaRegTrashCan } from "react-icons/fa6";
-import Link from "next/link"; // เพิ่มการใช้งาน Link
+import Link from "next/link";
+import AddProduct from "./addProduct";
+import { product } from "../../../lib/data"; // Import product for columns
+
+export type Products = {
+  pro_id: number;
+  pro_name: string;
+  pro_des: string;
+  category_id: number;
+  brand_id: number;
+};
+
+export type Categories = {
+  category_id: number;
+  category_name: string;
+};
+
+export type Brands = {
+  brand_id: number;
+  brand_name: string;
+};
 
 const ProductTable: FC = () => {
-  const [selectedKeys, setSelectedKeys] = useState<Selection>(new Set([]));
-  const [orders, setOrders] = useState<any[]>([]); // ข้อมูล orders ใช้ productData แทน
+  const [orders, setOrders] = useState<Products[]>([]);
+  const [categories, setCategories] = useState<Categories[]>([]);
+  const [brands, setBrands] = useState<Brands[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [showDeleteButton, setShowDeleteButton] = useState(false); // เพิ่มสถานะการแสดงปุ่มลบ
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // ใช้ productData แทน
-  useEffect(() => {
-    setOrders(productData);
-    setIsLoading(false);
-  }, []);
+  // ฟังก์ชัน fetchData ที่สามารถเรียกใช้ได้จากที่อื่น
+  const fetchData = async () => {
+    try {
+      const [productsRes, categoriesRes, brandsRes] = await Promise.all([
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/products`),
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/categories`),
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/brands`),
+      ]);
 
-  // ฟังก์ชันลบข้อมูลหลายรายการ
-  const handleMultipleDelete = () => {
-    if (selectedKeys === "all") {
-      setOrders([]);
-    } else {
-      const selectedID = Array.from(selectedKeys);
-      setOrders((prev) =>
-        prev.filter((order) => !selectedID.includes(order.id.toString()))
-      );
+      if (!productsRes.ok || !categoriesRes.ok || !brandsRes.ok) {
+        throw new Error("Failed to fetch data");
+      }
+
+      const [productsData, categoriesData, brandsData] = await Promise.all([
+        productsRes.json(),
+        categoriesRes.json(),
+        brandsRes.json(),
+      ]);
+
+      setOrders(productsData);
+      setCategories(categoriesData);
+      setBrands(brandsData);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    } finally {
+      setIsLoading(false);
     }
-    setSelectedKeys(new Set());
-    setShowDeleteButton(false); // ซ่อนปุ่มหลังจากการลบ
   };
 
-  // แสดงปุ่มลบเมื่อมีการเลือกสินค้า
   useEffect(() => {
-    if (selectedKeys === "all" || selectedKeys.size > 0) {
-      setShowDeleteButton(true);
-    } else {
-      setShowDeleteButton(false);
-    }
-  }, [selectedKeys]);
+    fetchData();
+  }, []);
 
   const isEmpty = orders.length === 0;
-  const [rowsPerPage] = React.useState(10);
-  const [page, setPage] = React.useState(1);
+  const [rowsPerPage] = useState(10);
+  const [page, setPage] = useState(1);
   const pages = Math.ceil(orders.length / rowsPerPage);
 
-  // แบ่งข้อมูลตาม Pagination
   const items = useMemo(() => {
     const start = (page - 1) * rowsPerPage;
     const end = start + rowsPerPage;
     return orders.slice(start, end);
   }, [page, rowsPerPage, orders]);
 
-  // แสดง Loading ระหว่างดึงข้อมูล
+  const closeModal = () => {
+    setIsModalOpen(false);
+  };
+
+  const refreshProducts = () => {
+    setIsLoading(true);
+    fetchData(); // เรียกใช้ฟังก์ชัน fetchData ที่ย้ายมาจาก useEffect
+  };
+
   if (isLoading) {
     return <div className="text-center py-10">กำลังโหลดข้อมูล...</div>;
   }
 
-  // ฟังก์ชันเพื่อป้องกันการเลือกเมื่อคลิกที่ row
-  const handleRowClick = (id: string) => {
-    // ส่งผู้ใช้ไปยังหน้ารายละเอียดของสินค้า
-    window.location.href = `/admin/page/product-details?id=${id}`;
-  };
-
   return (
     <div className="mt-4">
+      <div className="mb-4 flex justify-end">
+        <button
+          onClick={() => setIsModalOpen(true)}
+          className="bg-blue-500 text-white px-4 py-2 rounded inline-block"
+        >
+          เพิ่มข้อมูลสินค้า
+        </button>
+      </div>
+
       <Table
-        topContent={
-          showDeleteButton ? (
-            <div className="flex w-full items-center justify-between bg-red-100 p-2 px-4 rounded-lg">
-              <Text variant="text-table" className="text-red-600">
-                {selectedKeys === "all"
-                  ? "เลือกทั้งหมด"
-                  : `เลือกแล้ว ${selectedKeys.size} รายการ`}
-              </Text>
-              <div className="flex justify-end">
-                <Button
-                  size="icon"
-                  isIconOnly={true}
-                  className="text-red-600"
-                  onClick={handleMultipleDelete}
-                >
-                  <TooltipIcon icon={<FaRegTrashCan />} tooltip="ลบ" />
-                </Button>
-              </div>
-            </div>
-          ) : (
-            <></>
-          )
-        }
         aria-label="table"
-        selectionMode="multiple"
         emptyWrapper={isEmpty}
         bottomContentPlacement="outside"
         bottomContent={
@@ -127,9 +132,8 @@ const ProductTable: FC = () => {
           td: "p-4",
           tbody: "!p-0",
         }}
-        onSelectionChange={setSelectedKeys}
-        selectedKeys={selectedKeys}
       >
+        {/* TableHeader using the imported product for columns */}
         <TableHeader columns={product}>
           {(column) => (
             <TableColumn key={column.uid}>{column.name}</TableColumn>
@@ -137,33 +141,42 @@ const ProductTable: FC = () => {
         </TableHeader>
 
         <TableBody>
-          {items.map((product) => (
-            <TableRow
-              key={product.id}
-              onClick={(e) => {
-                // หากคลิกที่แถวไม่ใช่ที่ checkbox, ไปยังหน้า product-details
-                if (!(e.target instanceof HTMLInputElement)) {
-                  e.stopPropagation(); // หยุดการส่งเหตุการณ์ไปยัง checkbox selection
-                  handleRowClick(product.id);
-                }
-              }} // คลิกเพื่อไปยังหน้า product-details
-              className="cursor-pointer" // เพิ่มลูกเล่นให้มีการคลิก
-            >
-              <TableCell>{product.id}</TableCell>
-              <TableCell>{product.name}</TableCell>
-              <TableCell>{product.description}</TableCell>
-              <TableCell>{product.category}</TableCell>
-              <TableCell>{product.brand}</TableCell>
-              <TableCell>
-                {/* ใช้ Link เพื่อสร้างลิงก์ไปยังหน้า product-details */}
-                <Link href={`/admin/page/product-details?id=${product.id}`}>
-                  {product.detail}
-                </Link>
-              </TableCell>
-            </TableRow>
-          ))}
+          {items.map((product) => {
+            const categoryName =
+              categories.find((c) => c.category_id === product.category_id)
+                ?.category_name || "ไม่ระบุ";
+            const brandName =
+              brands.find((b) => b.brand_id === product.brand_id)?.brand_name ||
+              "ไม่ระบุ";
+
+            return (
+              <TableRow key={product.pro_id}>
+                <TableCell>{product.pro_id}</TableCell>
+                <TableCell>{product.pro_name}</TableCell>
+                <TableCell>{product.pro_des}</TableCell>
+                <TableCell>{categoryName}</TableCell>
+                <TableCell>{brandName}</TableCell>
+                <TableCell>
+                  <Link
+                    href={`/admin/page/product-details?id=${product.pro_id}`}
+                  >
+                    <u>รายละเอียด</u>
+                  </Link>
+                </TableCell>
+              </TableRow>
+            );
+          })}
         </TableBody>
       </Table>
+
+      {/* Modal for adding product */}
+      {isModalOpen && (
+        <AddProduct
+          isOpen={isModalOpen}
+          onClose={closeModal}
+          onProductAdded={refreshProducts}
+        />
+      )}
     </div>
   );
 };

@@ -23,8 +23,9 @@ const SizeSelection = () => {
             key={index}
             type="button"
             className={cn([
-              "bg-[#F0F0F0] flex items-center justify-center px-5 lg:px-6 py-2.5 lg:py-3 text-sm lg:text-base rounded-full m-1 lg:m-0 max-h-[46px]",
-              sizeSelection === size && "bg-black font-medium text-white",
+              "bg-te-papa-green-100 flex items-center justify-center px-5 lg:px-6 py-2.5 lg:py-3 text-sm lg:text-base rounded-full m-1 lg:m-0 max-h-[46px]",
+              sizeSelection === size &&
+                "bg-te-papa-green-800 font-medium text-white",
             ])}
             onClick={() => dispatch(setSizeSelection(size))}
           >
