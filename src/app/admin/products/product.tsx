@@ -15,6 +15,7 @@ import { product } from "../../../lib/data"; // Import product for columns
 
 export type Products = {
   pro_id: number;
+  sku: string;
   pro_name: string;
   pro_des: string;
   category_id: number;
@@ -152,13 +153,14 @@ const ProductTable: FC = () => {
             return (
               <TableRow key={product.pro_id}>
                 <TableCell>{product.pro_id}</TableCell>
+                <TableCell>{product.sku}</TableCell>
                 <TableCell>{product.pro_name}</TableCell>
                 <TableCell>{product.pro_des}</TableCell>
                 <TableCell>{categoryName}</TableCell>
                 <TableCell>{brandName}</TableCell>
                 <TableCell>
                   <Link
-                    href={`/admin/page/product-details?id=${product.pro_id}`}
+                    href={`/admin/products/product_details?pro_id=${product.pro_id}`}
                   >
                     <u>รายละเอียด</u>
                   </Link>

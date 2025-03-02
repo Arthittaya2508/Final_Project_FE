@@ -139,7 +139,8 @@ export const columns = [
   { name: "รายละเอียด", uid: "detail" },
 ];
 export const product = [
-  { name: "ID", uid: "id", sortable: true },
+  { name: "ลำดับที่", uid: "id", sortable: true },
+  { name: "รหัสสินค้า", uid: "sku", sortable: true },
   { name: "ชื่อสินค้า", uid: "name", sortable: true },
   { name: "คำอธิบาย", uid: "description", sortable: true },
   { name: "ประเภท", uid: "category", sortable: true },
