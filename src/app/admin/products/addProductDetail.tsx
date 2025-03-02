@@ -14,16 +14,17 @@ const AddProductDetail: React.FC<AddProductDetailProps> = ({
   onProductAdded,
   pro_id,
 }) => {
-  const [productDetail, setProductDetail] = useState({
-    color_id: 0,
-    size_id: 0,
-    gender_id: 0,
-    stock_quantity: 0,
-    sku: "",
-    sale_price: 0,
-    cost_price: 0,
-    pro_image: "",
-  });
+  const [productDetails, setProductDetails] = useState([
+    {
+      color_id: 0,
+      size_id: 0,
+      gender_id: 0,
+      stock_quantity: 0,
+      sale_price: 0,
+      cost_price: 0,
+      pro_image: "",
+    },
+  ]);
 
   const [colors, setColors] = useState<
     { color_id: number; color_name: string }[]
@@ -62,8 +63,72 @@ const AddProductDetail: React.FC<AddProductDetailProps> = ({
     if (isOpen) fetchData();
   }, [isOpen]);
 
-  const handleChange = (field: string, value: any) => {
-    setProductDetail({ ...productDetail, [field]: value });
+  const handleChange = (index: number, field: string, value: any) => {
+    const updatedProductDetails = [...productDetails];
+    updatedProductDetails[index] = {
+      ...updatedProductDetails[index],
+      [field]: value,
+    };
+    setProductDetails(updatedProductDetails);
+  };
+
+  const addNewProductForm = () => {
+    setProductDetails([
+      ...productDetails,
+      {
+        color_id: 0,
+        size_id: 0,
+        gender_id: 0,
+        stock_quantity: 0,
+        sale_price: 0,
+        cost_price: 0,
+        pro_image: "",
+      },
+    ]);
+  };
+
+  const handleSubmit = async () => {
+    const hasEmptyFields = productDetails.some(
+      (product) =>
+        !product.color_id ||
+        !product.size_id ||
+        !product.gender_id ||
+        !product.stock_quantity ||
+        !product.sale_price ||
+        !product.cost_price ||
+        !product.pro_image
+    );
+
+    if (hasEmptyFields) {
+      Swal.fire("Error", "กรุณากรอกข้อมูลให้ครบถ้วน", "error");
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const apiBase =
+        process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+      const response = await fetch(`${apiBase}/products`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ products: productDetails }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to add products");
+      }
+
+      Swal.fire("Success", "เพิ่มสินค้าสำเร็จ", "success");
+      onProductAdded();
+      onClose();
+    } catch (error) {
+      Swal.fire("Error", "เกิดข้อผิดพลาดในการเพิ่มสินค้า", "error");
+    } finally {
+      setLoading(false);
+    }
   };
 
   if (!isOpen) return null;
@@ -73,68 +138,125 @@ const AddProductDetail: React.FC<AddProductDetailProps> = ({
       <div className="bg-white p-6 rounded-lg w-[500px]">
         <h2 className="text-2xl font-bold mb-4">เพิ่มรายละเอียดสินค้า</h2>
 
-        <label htmlFor="color">สี</label>
-        <select
-          id="color"
-          value={productDetail.color_id}
-          onChange={(e) => handleChange("color_id", parseInt(e.target.value))}
-          className="border p-2 rounded w-full mb-2"
-          aria-label="เลือกสี"
-        >
-          <option value={0}>เลือกสี</option>
-          {colors.map((color) => (
-            <option key={color.color_id} value={color.color_id}>
-              {color.color_name}
-            </option>
-          ))}
-        </select>
+        {productDetails.map((product, index) => (
+          <div key={index}>
+            <label htmlFor={`color-${index}`}>สี</label>
+            <select
+              id={`color-${index}`}
+              value={product.color_id}
+              onChange={(e) =>
+                handleChange(index, "color_id", parseInt(e.target.value))
+              }
+              className="border p-2 rounded w-full mb-2"
+              aria-label="เลือกสี"
+            >
+              <option value={0}>เลือกสี</option>
+              {colors.map((color) => (
+                <option key={color.color_id} value={color.color_id}>
+                  {color.color_name}
+                </option>
+              ))}
+            </select>
 
-        <label htmlFor="size">ขนาด</label>
-        <select
-          id="size"
-          value={productDetail.size_id}
-          onChange={(e) => handleChange("size_id", parseInt(e.target.value))}
-          className="border p-2 rounded w-full mb-2"
-          aria-label="เลือกขนาด"
-        >
-          <option value={0}>เลือกขนาด</option>
-          {sizes.map((size) => (
-            <option key={size.size_id} value={size.size_id}>
-              {size.size_name}
-            </option>
-          ))}
-        </select>
+            <label htmlFor={`size-${index}`}>ขนาด</label>
+            <select
+              id={`size-${index}`}
+              value={product.size_id}
+              onChange={(e) =>
+                handleChange(index, "size_id", parseInt(e.target.value))
+              }
+              className="border p-2 rounded w-full mb-2"
+              aria-label="เลือกขนาด"
+            >
+              <option value={0}>เลือกขนาด</option>
+              {sizes.map((size) => (
+                <option key={size.size_id} value={size.size_id}>
+                  {size.size_name}
+                </option>
+              ))}
+            </select>
 
-        <label htmlFor="gender">เพศ</label>
-        <select
-          id="gender"
-          value={productDetail.gender_id}
-          onChange={(e) => handleChange("gender_id", parseInt(e.target.value))}
-          className="border p-2 rounded w-full mb-2"
-          aria-label="เลือกเพศ"
-        >
-          <option value={0}>เลือกเพศ</option>
-          {genders.map((gender) => (
-            <option key={gender.gender_id} value={gender.gender_id}>
-              {gender.gender_name}
-            </option>
-          ))}
-        </select>
+            <label htmlFor={`gender-${index}`}>เพศ</label>
+            <select
+              id={`gender-${index}`}
+              value={product.gender_id}
+              onChange={(e) =>
+                handleChange(index, "gender_id", parseInt(e.target.value))
+              }
+              className="border p-2 rounded w-full mb-2"
+              aria-label="เลือกเพศ"
+            >
+              <option value={0}>เลือกเพศ</option>
+              {genders.map((gender) => (
+                <option key={gender.gender_id} value={gender.gender_id}>
+                  {gender.gender_name}
+                </option>
+              ))}
+            </select>
 
-        <input
-          type="text"
-          placeholder="SKU"
-          value={productDetail.sku}
-          onChange={(e) => handleChange("sku", e.target.value)}
-          className="border p-2 rounded w-full mb-2"
-        />
+            <label htmlFor={`stock_quantity-${index}`}>จำนวนสินค้า</label>
+            <input
+              id={`stock_quantity-${index}`}
+              type="number"
+              value={product.stock_quantity}
+              onChange={(e) =>
+                handleChange(index, "stock_quantity", parseInt(e.target.value))
+              }
+              className="border p-2 rounded w-full mb-2"
+              aria-label="กรอกจำนวนสินค้า"
+            />
+
+            <label htmlFor={`sale_price-${index}`}>ราคาขาย</label>
+            <input
+              id={`sale_price-${index}`}
+              type="number"
+              value={product.sale_price}
+              onChange={(e) =>
+                handleChange(index, "sale_price", parseFloat(e.target.value))
+              }
+              className="border p-2 rounded w-full mb-2"
+              aria-label="กรอกราคาขาย"
+            />
+
+            <label htmlFor={`cost_price-${index}`}>ราคาทุน</label>
+            <input
+              id={`cost_price-${index}`}
+              type="number"
+              value={product.cost_price}
+              onChange={(e) =>
+                handleChange(index, "cost_price", parseFloat(e.target.value))
+              }
+              className="border p-2 rounded w-full mb-2"
+              aria-label="กรอกราคาทุน"
+            />
+
+            <label htmlFor={`pro_image-${index}`}>รูปภาพสินค้า</label>
+            <input
+              id={`pro_image-${index}`}
+              type="text"
+              value={product.pro_image}
+              onChange={(e) => handleChange(index, "pro_image", e.target.value)}
+              className="border p-2 rounded w-full mb-2"
+              aria-label="กรอก URL รูปภาพ"
+            />
+          </div>
+        ))}
 
         <div className="flex space-x-4">
           <button
-            onClick={() => alert("Submit logic here")}
-            className="bg-green-500 text-white px-4 py-2 rounded"
+            onClick={addNewProductForm}
+            className="bg-blue-500 text-white px-4 py-2 rounded"
           >
-            เพิ่ม
+            + เพิ่มรายการใหม่
+          </button>
+          <button
+            onClick={handleSubmit}
+            className={`bg-green-500 text-white px-4 py-2 rounded ${
+              loading ? "opacity-50 cursor-not-allowed" : ""
+            }`}
+            disabled={loading}
+          >
+            {loading ? "กำลังเพิ่มสินค้า..." : "เพิ่มสินค้า"}
           </button>
           <button
             onClick={onClose}

@@ -40,7 +40,10 @@ export type Sizes = {
   size_id: number;
   size_name: string;
 };
-
+export type Products = {
+  pro_id: number;
+  sku: string;
+};
 const ProductDetailPage = () => {
   const searchParams = useSearchParams();
   const pro_id = searchParams.get("pro_id");
@@ -49,6 +52,7 @@ const ProductDetailPage = () => {
   const [colors, setColors] = useState<Colors[]>([]);
   const [sizes, setSizes] = useState<Sizes[]>([]);
   const [genders, setGenders] = useState<Genders[]>([]);
+  const [products, setProducts] = useState<Products[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -83,25 +87,29 @@ const ProductDetailPage = () => {
     try {
       const apiBaseUrl =
         process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
-      const [colorsRes, sizesRes, gendersRes] = await Promise.all([
+      const [colorsRes, sizesRes, gendersRes, productsRes] = await Promise.all([
         fetch(`${apiBaseUrl}/colors`),
         fetch(`${apiBaseUrl}/sizes`),
         fetch(`${apiBaseUrl}/genders`),
+        fetch(`${apiBaseUrl}/products`),
       ]);
 
-      if (!colorsRes.ok || !sizesRes.ok || !gendersRes.ok) {
+      if (!colorsRes.ok || !sizesRes.ok || !gendersRes.ok || !productsRes.ok) {
         throw new Error("Failed to fetch additional data");
       }
 
-      const [colorsData, sizesData, gendersData] = await Promise.all([
-        colorsRes.json(),
-        sizesRes.json(),
-        gendersRes.json(),
-      ]);
+      const [colorsData, sizesData, gendersData, productsData] =
+        await Promise.all([
+          colorsRes.json(),
+          sizesRes.json(),
+          gendersRes.json(),
+          productsRes.json(),
+        ]);
 
       setColors(colorsData);
       setSizes(sizesData);
       setGenders(gendersData);
+      setProducts(productsData);
     } catch (error) {
       setError("เกิดข้อผิดพลาดในการโหลดข้อมูลเสริม");
     }
@@ -161,11 +169,14 @@ const ProductDetailPage = () => {
             const genderName =
               genders.find((g) => g.gender_id === productDetail.gender_id)
                 ?.gender_name || "ไม่ระบุ";
+            const productName =
+              products.find((g) => g.pro_id === productDetail.pro_id)?.sku ||
+              "ไม่ระบุ";
 
             return (
               <TableRow key={productDetail.detail_id}>
                 <TableCell>{productDetail.detail_id}</TableCell>
-                <TableCell>{productDetail.pro_id}</TableCell>
+                <TableCell>{productName}</TableCell>
                 <TableCell>{colorName}</TableCell>
                 <TableCell>{sizeName}</TableCell>
                 <TableCell>{genderName}</TableCell>
