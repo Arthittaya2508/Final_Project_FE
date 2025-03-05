@@ -1,31 +1,32 @@
 import { useState, useEffect } from "react";
+import Swal from "sweetalert2"; // Import SweetAlert2
 
 interface Item {
   id: number;
   name: string;
 }
 
-interface Color {
+interface Colors {
   color_id: number;
   color_name: string;
 }
 
-interface Size {
+interface Sizes {
   size_id: number;
   size_name: string;
 }
 
-interface Category {
+interface Categories {
   category_id: number;
   category_name: string;
 }
 
-interface Brand {
+interface Brands {
   brand_id: number;
   brand_name: string;
 }
 
-interface Gender {
+interface Genders {
   gender_id: number;
   gender_name: string;
 }
@@ -49,27 +50,27 @@ const fetchData = async (api: string) => {
 
     switch (api) {
       case "/colors":
-        return data.map((item: Color) => ({
+        return data.map((item: Colors) => ({
           id: item.color_id,
           name: item.color_name,
         }));
       case "/sizes":
-        return data.map((item: Size) => ({
+        return data.map((item: Sizes) => ({
           id: item.size_id,
           name: item.size_name,
         }));
       case "/categories":
-        return data.map((item: Category) => ({
+        return data.map((item: Categories) => ({
           id: item.category_id,
           name: item.category_name,
         }));
       case "/brands":
-        return data.map((item: Brand) => ({
+        return data.map((item: Brands) => ({
           id: item.brand_id,
           name: item.brand_name,
         }));
       case "/genders":
-        return data.map((item: Gender) => ({
+        return data.map((item: Genders) => ({
           id: item.gender_id,
           name: item.gender_name,
         }));
@@ -87,6 +88,7 @@ export default function Tabbar() {
   const [data, setData] = useState<Item[]>([]);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [newItemName, setNewItemName] = useState<string>("");
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -98,49 +100,105 @@ export default function Tabbar() {
   }, []);
 
   useEffect(() => {
-    const tab = tabs.find((t) => t.id === openTab);
-    if (!tab) return;
-    fetchData(tab.api).then(setData);
-    if (typeof window !== "undefined") {
-      localStorage.setItem("openTab", openTab.toString());
-    }
+    refreshTab(); // เรียกใช้ refreshTab เมื่อ openTab เปลี่ยนแปลง
   }, [openTab]);
 
-  const handleAddData = async () => {
-    if (!newItemName) return;
-
-    // Get the API endpoint based on the current tab
+  const refreshTab = async () => {
+    setIsLoading(true); // ตั้งค่า isLoading เป็น true เพื่อแสดงสถานะการโหลด
     const tab = tabs.find((t) => t.id === openTab);
     if (!tab) return;
 
     try {
-      // Send a POST request to add the new data
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}${tab.api}`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ name: newItemName }),
-        }
-      );
+      const newData = await fetchData(tab.api); // ดึงข้อมูลใหม่จาก API
+      setData(newData); // อัพเดท state data
+    } catch (error) {
+      console.error("Error refreshing data:", error);
+      Swal.fire({
+        icon: "error",
+        title: "เกิดข้อผิดพลาด!",
+        text: "ไม่สามารถรีเฟรชข้อมูลได้ โปรดลองใหม่อีกครั้ง",
+      });
+    } finally {
+      setIsLoading(false); // ตั้งค่า isLoading เป็น false เมื่อโหลดเสร็จ
+    }
+  };
+
+  const handleAddData = async () => {
+    if (!newItemName.trim()) {
+      Swal.fire({
+        icon: "warning",
+        title: "กรุณากรอกชื่อ!",
+        text: "ชื่อข้อมูลไม่สามารถเป็นค่าว่างได้",
+      });
+      return;
+    }
+
+    const tab = tabs.find((t) => t.id === openTab);
+    if (!tab) return;
+
+    try {
+      const apiUrl = `${process.env.NEXT_PUBLIC_API_URL}${tab.api}`;
+      console.log("Sending POST request to:", apiUrl);
+
+      // กำหนด request body ตาม endpoint
+      let requestBody = {};
+      switch (tab.api) {
+        case "/colors":
+          requestBody = { color_name: newItemName }; // สำหรับ /colors
+          break;
+        case "/sizes":
+          requestBody = { size_name: newItemName }; // สำหรับ /sizes
+          break;
+        case "/categories":
+          requestBody = { category_name: newItemName }; // สำหรับ /categories
+          break;
+        case "/brands":
+          requestBody = { brand_name: newItemName }; // สำหรับ /brands
+          break;
+        case "/genders":
+          requestBody = { gender_name: newItemName }; // สำหรับ /genders
+          break;
+        default:
+          requestBody = { name: newItemName }; // ค่าเริ่มต้น
+      }
+
+      const response = await fetch(apiUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(requestBody), // ส่ง request body ที่ถูกต้อง
+      });
 
       if (!response.ok) {
-        throw new Error("Failed to add data");
+        const errorData = await response.json(); // ดึงข้อความผิดพลาดจากเซิร์ฟเวอร์
+        console.error("Error details:", errorData);
+        throw new Error(`Failed to add data. Status: ${response.status}`);
       }
 
       const newData = await response.json();
+      console.log("New Data Added:", newData);
 
-      // Add the new item to the list
+      // เพิ่มข้อมูลใหม่ลงใน list
       setData((prevData) => [...prevData, newData]);
       setIsModalOpen(false);
-      setNewItemName(""); // Reset the input field
+      setNewItemName("");
 
-      // Show alert on successful addition
-      alert("เพิ่มข้อมูลสำเร็จ!");
+      // เรียกใช้ refreshTab เพื่อดึงข้อมูลใหม่
+      await refreshTab();
+
+      Swal.fire({
+        icon: "success",
+        title: "เพิ่มข้อมูลสำเร็จ!",
+        text: `${tab.label} ถูกเพิ่มเรียบร้อยแล้ว`,
+      });
     } catch (error) {
       console.error("Error adding data:", error);
+      Swal.fire({
+        icon: "error",
+        title: "เกิดข้อผิดพลาด!",
+        text: "ไม่สามารถเพิ่มข้อมูลได้ โปรดลองใหม่อีกครั้ง",
+      });
     }
   };
 
@@ -153,6 +211,28 @@ export default function Tabbar() {
     if (!tab) return;
 
     try {
+      // กำหนด request body ตาม endpoint
+      let requestBody = {};
+      switch (tab.api) {
+        case "/colors":
+          requestBody = { color_name: updatedName }; // สำหรับ /colors
+          break;
+        case "/sizes":
+          requestBody = { size_name: updatedName }; // สำหรับ /sizes
+          break;
+        case "/categories":
+          requestBody = { category_name: updatedName }; // สำหรับ /categories
+          break;
+        case "/brands":
+          requestBody = { brand_name: updatedName }; // สำหรับ /brands
+          break;
+        case "/genders":
+          requestBody = { gender_name: updatedName }; // สำหรับ /genders
+          break;
+        default:
+          requestBody = { name: updatedName }; // ค่าเริ่มต้น
+      }
+
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}${tab.api}/${id}`,
         {
@@ -160,12 +240,14 @@ export default function Tabbar() {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ name: updatedName }),
+          body: JSON.stringify(requestBody), // ส่ง request body ที่ถูกต้อง
         }
       );
 
       if (!response.ok) {
-        throw new Error("Failed to update data");
+        const errorData = await response.json(); // ดึงข้อความผิดพลาดจากเซิร์ฟเวอร์
+        console.error("Error details:", errorData);
+        throw new Error(`Failed to update data. Status: ${response.status}`);
       }
 
       const updatedData = await response.json();
@@ -177,9 +259,21 @@ export default function Tabbar() {
         )
       );
 
-      alert("ข้อมูลถูกแก้ไขเรียบร้อยแล้ว!");
+      // เรียกใช้ refreshTab เพื่อดึงข้อมูลใหม่
+      await refreshTab();
+
+      Swal.fire({
+        icon: "success",
+        title: "ข้อมูลถูกแก้ไขเรียบร้อยแล้ว!",
+        text: "ชื่อข้อมูลถูกอัพเดทแล้ว",
+      });
     } catch (error) {
       console.error("Error editing data:", error);
+      Swal.fire({
+        icon: "error",
+        title: "เกิดข้อผิดพลาด!",
+        text: "ไม่สามารถแก้ไขข้อมูลได้ โปรดลองใหม่อีกครั้ง",
+      });
     }
   };
 
@@ -199,22 +293,42 @@ export default function Tabbar() {
       );
 
       if (!response.ok) {
-        throw new Error("Failed to delete data");
+        const errorData = await response.json(); // ดึงข้อความผิดพลาดจากเซิร์ฟเวอร์
+        console.error("Error details:", errorData);
+        throw new Error(`Failed to delete data. Status: ${response.status}`);
       }
 
       // Remove the deleted item from the list
       setData((prevData) => prevData.filter((item) => item.id !== id));
 
-      alert("ข้อมูลถูกลบเรียบร้อยแล้ว!");
+      // เรียกใช้ refreshTab เพื่อดึงข้อมูลใหม่
+      await refreshTab();
+
+      Swal.fire({
+        icon: "success",
+        title: "ข้อมูลถูกลบเรียบร้อยแล้ว!",
+        text: "ข้อมูลของคุณถูกลบออกจากระบบแล้ว",
+      });
     } catch (error) {
       console.error("Error deleting data:", error);
+      Swal.fire({
+        icon: "error",
+        title: "เกิดข้อผิดพลาด!",
+        text: "ไม่สามารถลบข้อมูลได้ โปรดลองใหม่อีกครั้ง",
+      });
     }
   };
-
   const currentTab = tabs.find((tab) => tab.id === openTab);
 
   return (
     <div className="w-full p-6">
+      {isLoading && (
+        <div className="fixed inset-0 flex items-center justify-center bg-gray-700 bg-opacity-50">
+          <div className="bg-white p-6 rounded shadow-lg">
+            <p>กำลังโหลดข้อมูล...</p>
+          </div>
+        </div>
+      )}
       <ul className="flex border-b relative">
         {tabs.map((tab) => (
           <li

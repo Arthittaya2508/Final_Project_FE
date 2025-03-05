@@ -1,6 +1,13 @@
 import { useState, useEffect } from "react";
 import Swal from "sweetalert2";
 
+export type Products = {
+  pro_id?: number;
+  pro_name: string;
+  pro_des: string;
+  category_id: number;
+  brand_id: number;
+};
 interface AddProductDetailProps {
   isOpen: boolean;
   onClose: () => void;
@@ -65,10 +72,21 @@ const AddProductDetail: React.FC<AddProductDetailProps> = ({
 
   const handleChange = (index: number, field: string, value: any) => {
     const updatedProductDetails = [...productDetails];
+
+    let parsedValue = value;
+    if (
+      ["color_id", "size_id", "gender_id", "stock_quantity"].includes(field)
+    ) {
+      parsedValue = value ? parseInt(value, 10) || 0 : 0;
+    } else if (["sale_price", "cost_price"].includes(field)) {
+      parsedValue = value ? parseFloat(value) || 0 : 0;
+    }
+
     updatedProductDetails[index] = {
       ...updatedProductDetails[index],
-      [field]: value,
+      [field]: parsedValue,
     };
+
     setProductDetails(updatedProductDetails);
   };
 
@@ -88,14 +106,26 @@ const AddProductDetail: React.FC<AddProductDetailProps> = ({
   };
 
   const handleSubmit = async () => {
+    console.log(
+      "📤 กำลังส่งข้อมูลไป API:",
+      JSON.stringify(
+        {
+          pro_id,
+          product_details: productDetails,
+        },
+        null,
+        2
+      )
+    );
+
     const hasEmptyFields = productDetails.some(
       (product) =>
         !product.color_id ||
         !product.size_id ||
         !product.gender_id ||
-        !product.stock_quantity ||
-        !product.sale_price ||
-        !product.cost_price ||
+        product.stock_quantity <= 0 ||
+        product.sale_price <= 0 ||
+        product.cost_price <= 0 ||
         !product.pro_image
     );
 
@@ -109,28 +139,31 @@ const AddProductDetail: React.FC<AddProductDetailProps> = ({
     try {
       const apiBase =
         process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
-      const response = await fetch(`${apiBase}/products`, {
+      const response = await fetch(`${apiBase}/product_details`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ products: productDetails }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          pro_id,
+          product_details: productDetails,
+        }),
       });
 
       if (!response.ok) {
-        throw new Error("Failed to add products");
+        const errorData = await response.json();
+        console.error("❌ เกิดข้อผิดพลาดจากเซิร์ฟเวอร์:", errorData);
+        throw new Error(errorData.message || "Failed to add product details");
       }
 
-      Swal.fire("Success", "เพิ่มสินค้าสำเร็จ", "success");
+      Swal.fire("Success", "เพิ่มรายละเอียดสินค้าสำเร็จ", "success");
       onProductAdded();
       onClose();
     } catch (error) {
-      Swal.fire("Error", "เกิดข้อผิดพลาดในการเพิ่มสินค้า", "error");
+      console.error("❌ Error:", error);
+      Swal.fire("Error", "เกิดข้อผิดพลาดในการเพิ่มรายละเอียดสินค้า", "error");
     } finally {
       setLoading(false);
     }
   };
-
   if (!isOpen) return null;
 
   return (
