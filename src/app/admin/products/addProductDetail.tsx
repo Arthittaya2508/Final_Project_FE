@@ -23,6 +23,7 @@ const AddProductDetail: React.FC<AddProductDetailProps> = ({
 }) => {
   const [productDetails, setProductDetails] = useState([
     {
+      pro_id: 0,
       color_id: 0,
       size_id: 0,
       gender_id: 0,
@@ -33,6 +34,9 @@ const AddProductDetail: React.FC<AddProductDetailProps> = ({
     },
   ]);
 
+  const [products, setProducts] = useState<
+    { pro_id: number; pro_name: string }[]
+  >([]);
   const [colors, setColors] = useState<
     { color_id: number; color_name: string }[]
   >([]);
@@ -49,16 +53,23 @@ const AddProductDetail: React.FC<AddProductDetailProps> = ({
       try {
         const apiBase =
           process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
-        const [colorsRes, sizesRes, gendersRes] = await Promise.all([
-          fetch(`${apiBase}/colors`),
-          fetch(`${apiBase}/sizes`),
-          fetch(`${apiBase}/genders`),
-        ]);
+        const [productsRes, colorsRes, sizesRes, gendersRes] =
+          await Promise.all([
+            fetch(`${apiBase}/products`),
+            fetch(`${apiBase}/colors`),
+            fetch(`${apiBase}/sizes`),
+            fetch(`${apiBase}/genders`),
+          ]);
 
-        if (!colorsRes.ok || !sizesRes.ok || !gendersRes.ok) {
+        if (
+          !productsRes.ok ||
+          !colorsRes.ok ||
+          !sizesRes.ok ||
+          !gendersRes.ok
+        ) {
           throw new Error("Failed to fetch data");
         }
-
+        setProducts(await productsRes.json());
         setColors(await colorsRes.json());
         setSizes(await sizesRes.json());
         setGenders(await gendersRes.json());
@@ -94,6 +105,7 @@ const AddProductDetail: React.FC<AddProductDetailProps> = ({
     setProductDetails([
       ...productDetails,
       {
+        pro_id: 0,
         color_id: 0,
         size_id: 0,
         gender_id: 0,
@@ -106,65 +118,49 @@ const AddProductDetail: React.FC<AddProductDetailProps> = ({
   };
 
   const handleSubmit = async () => {
-    console.log(
-      "📤 กำลังส่งข้อมูลไป API:",
-      JSON.stringify(
-        {
-          pro_id,
-          product_details: productDetails,
-        },
-        null,
-        2
-      )
-    );
-
-    const hasEmptyFields = productDetails.some(
-      (product) =>
-        !product.color_id ||
-        !product.size_id ||
-        !product.gender_id ||
-        product.stock_quantity <= 0 ||
-        product.sale_price <= 0 ||
-        product.cost_price <= 0 ||
-        !product.pro_image
-    );
-
-    if (hasEmptyFields) {
-      Swal.fire("Error", "กรุณากรอกข้อมูลให้ครบถ้วน", "error");
-      return;
-    }
-
-    setLoading(true);
-
     try {
+      const dataToSend = { ...productDetails[0], pro_id };
+      console.log("ส่งข้อมูล:", dataToSend);
+
+      // ตรวจสอบว่าผู้ใช้กำหนด API URL หรือยัง
       const apiBase =
         process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+
+      // ส่งคำขอ POST ไปยัง API
       const response = await fetch(`${apiBase}/product_details`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          pro_id,
-          product_details: productDetails,
-        }),
+        body: JSON.stringify(dataToSend),
       });
 
+      // เช็คว่า API ตอบกลับมาเป็น HTTP OK หรือไม่
       if (!response.ok) {
-        const errorData = await response.json();
-        console.error("❌ เกิดข้อผิดพลาดจากเซิร์ฟเวอร์:", errorData);
-        throw new Error(errorData.message || "Failed to add product details");
+        const errorMessage = await response.text(); // ใช้ text() แทน JSON ในกรณีที่ไม่ได้รับ JSON
+        console.error("API Error:", errorMessage);
+        throw new Error(errorMessage || "Failed to add product");
       }
 
+      // แปลงคำตอบจาก API เป็น JSON
+      const result = await response.json();
+      console.log("Response จาก API:", result);
+
+      // แจ้งผู้ใช้ว่าการเพิ่มรายละเอียดสินค้าสำเร็จ
       Swal.fire("Success", "เพิ่มรายละเอียดสินค้าสำเร็จ", "success");
+
+      // เรียก onProductAdded และ onClose หลังการเพิ่มสำเร็จ
       onProductAdded();
       onClose();
     } catch (error) {
       console.error("❌ Error:", error);
-      Swal.fire("Error", "เกิดข้อผิดพลาดในการเพิ่มรายละเอียดสินค้า", "error");
-    } finally {
-      setLoading(false);
+
+      // กรณีเกิดข้อผิดพลาดให้แจ้งเตือนผู้ใช้
+      let errorMessage = "เกิดข้อผิดพลาด";
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+      Swal.fire("Error", errorMessage, "error");
     }
   };
-  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex justify-center items-center z-50">

@@ -2,7 +2,7 @@
 import StatusFilter from "@/components/ui/Filter";
 import Status from "@/components/ui/Status";
 // import TabbarSection from "../containers/sandbox-page/tabbar-section";
-import TableSection from "../containers/sandbox-page/table-section";
+import TableSection from "../containers/home-page/table-section";
 
 import React from "react";
 

@@ -1,5 +1,5 @@
 "use client";
-import TabbarSection from "../containers/sandbox-page/tabbar-section";
+import TabbarSection from "../containers/home-page/tabbar-section";
 import React from "react";
 
 function ProductDetail() {
