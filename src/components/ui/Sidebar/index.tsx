@@ -58,12 +58,25 @@ const menuItems = [
     href: "/admin/employee",
   },
   {
+    label: "ข้อมูลบริษัท",
+    icon: <TbHome />,
+    href: "/admin/company",
+  },
+  {
+    label: "ข้อมูลรับเข้า",
+    icon: <TbHome />,
+    href: "/admin/import",
+  },
+  {
     label: "ข้อมูลรายงาน",
     icon: <TbBriefcase />,
     href: "#",
     submenu: [
-      { label: "ข้อมูลรายงาน", href: "/product/category" },
-      { label: "ข้อมูลรายเดือน", href: "/product/brand" },
+      { label: "รายงานสินค้าขายดี", href: "/admin/productsReport" },
+      { label: "รายงานการขาย", href: "/admin/salesReport" },
+      { label: "รายงานการรับเข้า", href: "/admin/importReport" },
+      // { label: "รายงานการส่งของ", href: "/admin/transportReport" },
+      // { label: "รายงานการออกสินค้า", href: "/admin/saleReport" },
     ],
   },
   {
