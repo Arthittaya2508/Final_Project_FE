@@ -1,3 +1,4 @@
+"use client";
 import Button from "@/components/ui/Buttons";
 import Pagination from "@/components/ui/Pagination/index";
 import Table from "@/components/ui/Table";

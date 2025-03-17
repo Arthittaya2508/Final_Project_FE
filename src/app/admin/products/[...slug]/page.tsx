@@ -14,8 +14,8 @@ import AddProductDetail from "@/app/admin/products/addProductDetail";
 import { SlOptionsVertical } from "react-icons/sl";
 import { useRouter } from "next/navigation"; // Import useRouter hook
 
-type ProductDetails = {
-  detail_id: number;
+type ProductDetail = {
+  pro_detail_id: number;
   pro_id: number;
   color_id: number;
   size_id: number;
@@ -48,7 +48,7 @@ const ProductDetailPage = () => {
   const pro_id = searchParams.get("pro_id");
   const router = useRouter(); // Initialize router
 
-  const [productDetails, setProductDetails] = useState<ProductDetails[]>([]);
+  const [productDetail, setProductDetail] = useState<ProductDetail[]>([]);
   const [colors, setColors] = useState<Colors[]>([]);
   const [sizes, setSizes] = useState<Sizes[]>([]);
   const [genders, setGenders] = useState<Genders[]>([]);
@@ -57,7 +57,7 @@ const ProductDetailPage = () => {
   const [error, setError] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const fetchProductDetails = async () => {
+  const fetchProductDetail = async () => {
     if (!pro_id) return;
 
     try {
@@ -72,10 +72,10 @@ const ProductDetailPage = () => {
       const data = await res.json();
       if (!data || data.length === 0) {
         setError("ไม่พบข้อมูลสินค้า");
-        setProductDetails([]);
+        setProductDetail([]);
         return;
       }
-      setProductDetails(data);
+      setProductDetail(data);
     } finally {
       setIsLoading(false);
     }
@@ -115,7 +115,7 @@ const ProductDetailPage = () => {
 
   const fetchData = async () => {
     await fetchAdditionalData();
-    await fetchProductDetails();
+    await fetchProductDetail();
   };
 
   useEffect(() => {
@@ -123,7 +123,7 @@ const ProductDetailPage = () => {
   }, [pro_id]);
 
   const refreshProducts = () => {
-    fetchProductDetails();
+    fetchProductDetail();
   };
 
   const closeModal = () => {
@@ -142,7 +142,7 @@ const ProductDetailPage = () => {
       </Button>
 
       {/* Check if no product details */}
-      {productDetails.length === 0 ? (
+      {productDetail.length === 0 ? (
         <div>❌ ยังไม่มีรายการสินค้า</div>
       ) : (
         <Table aria-label="product-details-table">
@@ -150,13 +150,14 @@ const ProductDetailPage = () => {
             <TableColumn>ลำดับที่</TableColumn>
             <TableColumn>📌 รหัสสินค้า</TableColumn>
             <TableColumn>🖼️ รูปสินค้า</TableColumn>
-            <TableColumn>🚻 เพศ</TableColumn>
+            <TableColumn>สี</TableColumn>
+            {/* <TableColumn>🚻 เพศ</TableColumn> */}
             <TableColumn>รายละเอียด</TableColumn>
             <TableColumn>action</TableColumn>
           </TableHeader>
 
           <TableBody>
-            {productDetails.map((productDetail) => {
+            {productDetail.map((productDetail) => {
               const colorName =
                 colors.find((c) => c.color_id === productDetail.color_id)
                   ?.color_name || "ไม่ระบุ";
@@ -171,8 +172,8 @@ const ProductDetailPage = () => {
                 "ไม่ระบุ";
 
               return (
-                <TableRow key={productDetail.detail_id}>
-                  <TableCell>{productDetail.detail_id}</TableCell>
+                <TableRow key={productDetail.pro_detail_id}>
+                  <TableCell>{productDetail.pro_detail_id}</TableCell>
                   <TableCell>{productName}</TableCell>
                   <TableCell>
                     {productDetail.pro_image ? (
@@ -185,19 +186,18 @@ const ProductDetailPage = () => {
                       "ไม่มีรูปภาพ"
                     )}
                   </TableCell>
+                  <TableCell>{colorName}</TableCell>
 
-                  <TableCell>{genderName}</TableCell>
-                  <TableCell>
-                    <u
-                      style={{ cursor: "pointer" }}
-                      onClick={() =>
-                        router.push(
-                          `/itemProduct?detail_id=${productDetail.detail_id}`
-                        )
-                      } // Navigate to itemProduct
-                    >
-                      รายละเอียด
-                    </u>
+                  {/* <TableCell>{genderName}</TableCell> */}
+                  <TableCell
+                    style={{ cursor: "pointer" }}
+                    onClick={() =>
+                      router.push(
+                        `/admin/products/itemProduct?pro_detail_id=${productDetail.pro_detail_id}`
+                      )
+                    } // Navigate to itemProduct
+                  >
+                    รายละเอียด
                   </TableCell>
                   <TableCell>
                     <SlOptionsVertical />

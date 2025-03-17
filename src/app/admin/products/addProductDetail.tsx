@@ -26,58 +26,38 @@ const AddProductDetail: React.FC<AddProductDetailProps> = ({
     {
       pro_id: 0,
       color_id: 0,
-      size_id: 0,
-      gender_id: 0,
-      stock_quantity: 0,
-      sale_price: 0,
-      cost_price: 0,
       pro_image: "",
     },
   ]);
-
   const [colors, setColors] = useState<
     { color_id: number; color_name: string }[]
   >([]);
-  const [sizes, setSizes] = useState<{ size_id: number; size_name: string }[]>(
-    []
-  );
-  const [genders, setGenders] = useState<
-    { gender_id: number; gender_name: string }[]
-  >([]);
+
   const [loading, setLoading] = useState(false);
+
   const addNewProductForm = () => {
     setProductDetails([
       ...productDetails,
       {
         pro_id: 0,
         color_id: 0,
-        size_id: 0,
-        gender_id: 0,
-        stock_quantity: 0,
-        sale_price: 0,
-        cost_price: 0,
         pro_image: "",
       },
     ]);
   };
+
   useEffect(() => {
     const fetchData = async () => {
       try {
         const apiBase =
           process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
-        const [colorsRes, sizesRes, gendersRes] = await Promise.all([
-          fetch(`${apiBase}/colors`),
-          fetch(`${apiBase}/sizes`),
-          fetch(`${apiBase}/genders`),
-        ]);
+        const [colorsRes] = await Promise.all([fetch(`${apiBase}/colors`)]);
 
-        if (!colorsRes.ok || !sizesRes.ok || !gendersRes.ok) {
+        if (!colorsRes.ok) {
           throw new Error("Failed to fetch data");
         }
 
         setColors(await colorsRes.json());
-        setSizes(await sizesRes.json());
-        setGenders(await gendersRes.json());
       } catch (error) {
         console.error("Error fetching data:", error);
       }
@@ -112,7 +92,7 @@ const AddProductDetail: React.FC<AddProductDetailProps> = ({
       const updatedProductDetails = [...productDetails];
       updatedProductDetails[index] = {
         ...updatedProductDetails[index],
-        pro_image: file.name, // Save only the filename
+        pro_image: file.name,
       };
       setProductDetails(updatedProductDetails);
     }
@@ -120,7 +100,12 @@ const AddProductDetail: React.FC<AddProductDetailProps> = ({
 
   const handleSubmit = async () => {
     try {
-      const dataToSend = { ...productDetails[0], pro_id };
+      setLoading(true); // Set loading to true before the request
+
+      const dataToSend = productDetails.map((detail) => ({
+        ...detail,
+        pro_id,
+      }));
       console.log("ส่งข้อมูล:", dataToSend);
 
       const apiBase =
@@ -149,6 +134,8 @@ const AddProductDetail: React.FC<AddProductDetailProps> = ({
         error instanceof Error ? error.message : "เกิดข้อผิดพลาด",
         "error"
       );
+    } finally {
+      setLoading(false); // Set loading to false after the request
     }
   };
 
@@ -159,7 +146,7 @@ const AddProductDetail: React.FC<AddProductDetailProps> = ({
 
         {productDetails.map((product, index) => (
           <div key={index}>
-            {/* <label htmlFor={`color-${index}`}>สี</label>
+            <label htmlFor={`color-${index}`}>สี</label>
             <select
               id={`color-${index}`}
               value={product.color_id}
@@ -174,74 +161,8 @@ const AddProductDetail: React.FC<AddProductDetailProps> = ({
                   {color.color_name}
                 </option>
               ))}
-            </select> */}
-
-            {/* <label htmlFor={`size-${index}`}>ขนาด</label>
-            <select
-              id={`size-${index}`}
-              value={product.size_id}
-              onChange={(e) =>
-                handleChange(index, "size_id", parseInt(e.target.value))
-              }
-              className="border p-2 rounded w-full mb-2"
-            >
-              <option value={0}>เลือกขนาด</option>
-              {sizes.map((size) => (
-                <option key={size.size_id} value={size.size_id}>
-                  {size.size_name}
-                </option>
-              ))}
-            </select> */}
-
-            <label htmlFor={`gender-${index}`}>เพศ</label>
-            <select
-              id={`gender-${index}`}
-              value={product.gender_id}
-              onChange={(e) =>
-                handleChange(index, "gender_id", parseInt(e.target.value))
-              }
-              className="border p-2 rounded w-full mb-2"
-            >
-              <option value={0}>เลือกเพศ</option>
-              {genders.map((gender) => (
-                <option key={gender.gender_id} value={gender.gender_id}>
-                  {gender.gender_name}
-                </option>
-              ))}
             </select>
 
-            {/* <label htmlFor={`stock_quantity-${index}`}>จำนวนสินค้า</label>
-            <input
-              id={`stock_quantity-${index}`}
-              type="number"
-              value={product.stock_quantity}
-              onChange={(e) =>
-                handleChange(index, "stock_quantity", parseInt(e.target.value))
-              }
-              className="border p-2 rounded w-full mb-2"
-            /> */}
-
-            {/* <label htmlFor={`sale_price-${index}`}>ราคาขาย</label>
-            <input
-              id={`sale_price-${index}`}
-              type="number"
-              value={product.sale_price}
-              onChange={(e) =>
-                handleChange(index, "sale_price", parseFloat(e.target.value))
-              }
-              className="border p-2 rounded w-full mb-2"
-            />
-            <label htmlFor={`cost_price-${index}`}>ราคาทุน</label>
-            <input
-              id={`cost_price-${index}`}
-              type="number"
-              value={product.cost_price}
-              onChange={(e) =>
-                handleChange(index, "cost_price", parseFloat(e.target.value))
-              }
-              className="border p-2 rounded w-full mb-2"
-              aria-label="กรอกราคาทุน"
-            /> */}
             <label htmlFor={`pro_image-${index}`}>รูปภาพสินค้า</label>
             <input
               id={`pro_image-${index}`}
