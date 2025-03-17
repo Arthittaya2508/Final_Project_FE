@@ -37,7 +37,7 @@ const ExtendedButton = extendVariants(ButtonHeroUI, {
   },
   defaultVariants: {
     color: "default",
-    size: "lg",
+    size: "md",
   },
 });
 

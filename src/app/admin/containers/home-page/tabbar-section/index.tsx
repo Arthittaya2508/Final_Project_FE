@@ -87,7 +87,9 @@ export default function Tabbar() {
   const [openTab, setOpenTab] = useState<number>(1);
   const [data, setData] = useState<Item[]>([]);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
-  const [newItemName, setNewItemName] = useState<string>("");
+  const [newItemName, setNewItemName] = useState<string>(""); // ใช้สำหรับการเพิ่มข้อมูลใหม่
+  const [editItemId, setEditItemId] = useState<number | null>(null); // ใช้สำหรับการแก้ไขข้อมูล
+  const [editItemName, setEditItemName] = useState<string>(""); // ใช้สำหรับแสดงชื่อข้อมูลในระหว่างแก้ไข
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   useEffect(() => {
@@ -202,50 +204,60 @@ export default function Tabbar() {
     }
   };
 
-  const handleEditData = async (id: number) => {
-    const updatedName = prompt("กรุณากรอกชื่อใหม่");
+  const handleEditData = (item: Item) => {
+    setEditItemId(item.id);
+    setEditItemName(item.name);
+    setIsModalOpen(true);
+  };
 
-    if (!updatedName) return;
+  const handleSaveEditData = async () => {
+    if (!editItemName.trim()) {
+      Swal.fire({
+        icon: "warning",
+        title: "กรุณากรอกชื่อ!",
+        text: "ชื่อข้อมูลไม่สามารถเป็นค่าว่างได้",
+      });
+      return;
+    }
 
     const tab = tabs.find((t) => t.id === openTab);
-    if (!tab) return;
+    if (!tab || editItemId === null) return;
 
     try {
-      // กำหนด request body ตาม endpoint
       let requestBody = {};
       switch (tab.api) {
         case "/colors":
-          requestBody = { color_name: updatedName }; // สำหรับ /colors
+          requestBody = { color_name: editItemName };
           break;
         case "/sizes":
-          requestBody = { size_name: updatedName }; // สำหรับ /sizes
+          requestBody = { size_name: editItemName };
           break;
         case "/categories":
-          requestBody = { category_name: updatedName }; // สำหรับ /categories
+          requestBody = { category_name: editItemName };
           break;
         case "/brands":
-          requestBody = { brand_name: updatedName }; // สำหรับ /brands
+          requestBody = { brand_name: editItemName };
           break;
         case "/genders":
-          requestBody = { gender_name: updatedName }; // สำหรับ /genders
+          requestBody = { gender_name: editItemName };
           break;
         default:
-          requestBody = { name: updatedName }; // ค่าเริ่มต้น
+          requestBody = { name: editItemName };
       }
 
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}${tab.api}/${id}`,
+        `${process.env.NEXT_PUBLIC_API_URL}${tab.api}/${editItemId}`,
         {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify(requestBody), // ส่ง request body ที่ถูกต้อง
+          body: JSON.stringify(requestBody),
         }
       );
 
       if (!response.ok) {
-        const errorData = await response.json(); // ดึงข้อความผิดพลาดจากเซิร์ฟเวอร์
+        const errorData = await response.json();
         console.error("Error details:", errorData);
         throw new Error(`Failed to update data. Status: ${response.status}`);
       }
@@ -255,12 +267,12 @@ export default function Tabbar() {
       // Update the list with the edited item
       setData((prevData) =>
         prevData.map((item) =>
-          item.id === id ? { ...item, name: updatedData.name } : item
+          item.id === editItemId ? { ...item, name: updatedData.name } : item
         )
       );
 
-      // เรียกใช้ refreshTab เพื่อดึงข้อมูลใหม่
-      await refreshTab();
+      setIsModalOpen(false);
+      setEditItemName(""); // Clear the input field after saving
 
       Swal.fire({
         icon: "success",
@@ -293,15 +305,12 @@ export default function Tabbar() {
       );
 
       if (!response.ok) {
-        const errorData = await response.json(); // ดึงข้อความผิดพลาดจากเซิร์ฟเวอร์
+        const errorData = await response.json();
         console.error("Error details:", errorData);
         throw new Error(`Failed to delete data. Status: ${response.status}`);
       }
 
-      // Remove the deleted item from the list
       setData((prevData) => prevData.filter((item) => item.id !== id));
-
-      // เรียกใช้ refreshTab เพื่อดึงข้อมูลใหม่
       await refreshTab();
 
       Swal.fire({
@@ -318,6 +327,7 @@ export default function Tabbar() {
       });
     }
   };
+
   const currentTab = tabs.find((tab) => tab.id === openTab);
 
   return (
@@ -373,7 +383,7 @@ export default function Tabbar() {
                   </td>
                   <td className="border p-2 flex gap-2">
                     <button
-                      onClick={() => handleEditData(item.id)}
+                      onClick={() => handleEditData(item)}
                       className="bg-yellow-500 text-white px-3 py-1 rounded"
                     >
                       แก้ไข
@@ -402,7 +412,9 @@ export default function Tabbar() {
         <div className="fixed inset-0 flex items-center justify-center bg-gray-700 bg-opacity-50">
           <div className="bg-white p-6 rounded shadow-lg w-1/3">
             <h2 className="text-xl font-semibold mb-4">
-              เพิ่ม{currentTab.label}
+              {editItemId
+                ? `แก้ไข${currentTab.label}`
+                : `เพิ่ม${currentTab.label}`}
             </h2>
             <div className="mb-4">
               <label
@@ -415,8 +427,12 @@ export default function Tabbar() {
                 type="text"
                 id="itemName"
                 className="w-full px-4 py-2 border border-gray-300 rounded"
-                value={newItemName}
-                onChange={(e) => setNewItemName(e.target.value)}
+                value={editItemId ? editItemName : newItemName}
+                onChange={(e) =>
+                  editItemId
+                    ? setEditItemName(e.target.value)
+                    : setNewItemName(e.target.value)
+                }
               />
             </div>
             <div className="flex gap-4">
@@ -427,10 +443,10 @@ export default function Tabbar() {
                 ยกเลิก
               </button>
               <button
-                onClick={handleAddData}
+                onClick={editItemId ? handleSaveEditData : handleAddData}
                 className="bg-blue-500 text-white px-4 py-2 rounded"
               >
-                เพิ่ม{currentTab.label}
+                {editItemId ? "บันทึกการแก้ไข" : "เพิ่มข้อมูล"}
               </button>
             </div>
           </div>

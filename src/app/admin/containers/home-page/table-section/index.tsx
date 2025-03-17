@@ -1,8 +1,7 @@
 import Button from "@/components/ui/Buttons";
 import Pagination from "@/components/ui/Pagination/index";
 import Table from "@/components/ui/Table";
-import Text from "@/components/ui/Text";
-import TooltipIcon from "@/components/ui/Tooltip";
+import OrderDetailModal from "@/app/admin/dashboard/orderDetailModal";
 import { columns } from "../../../../../lib/data";
 import {
   TableBody,
@@ -32,11 +31,8 @@ export type Address = {
 const fetchOrders = async () => {
   try {
     const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/orders`);
-    if (!response.ok) {
-      throw new Error("Network response was not ok");
-    }
-    const data = await response.json();
-    return data;
+    if (!response.ok) throw new Error("Network response was not ok");
+    return await response.json();
   } catch (error) {
     console.error("Error fetching orders:", error);
     return [];
@@ -46,11 +42,8 @@ const fetchOrders = async () => {
 const fetchUsers = async () => {
   try {
     const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users`);
-    if (!response.ok) {
-      throw new Error("Network response was not ok");
-    }
-    const data = await response.json();
-    return data;
+    if (!response.ok) throw new Error("Network response was not ok");
+    return await response.json();
   } catch (error) {
     console.error("Error fetching users:", error);
     return [];
@@ -62,22 +55,36 @@ const fetchAddress = async (userId: number) => {
     const response = await fetch(
       `${process.env.NEXT_PUBLIC_API_URL}/address?user_id=${userId}`
     );
-    if (!response.ok) {
-      throw new Error("Network response was not ok");
-    }
+    if (!response.ok) throw new Error("Network response was not ok");
     const data = await response.json();
-    return data[0] || null; // ถ้ามีที่อยู่ให้ส่งคืนที่อยู่ตัวแรก
+    return data[0] || null;
   } catch (error) {
     console.error("Error fetching address:", error);
-    return null; // ถ้าไม่พบที่อยู่ให้ส่งคืน null
+    return null;
+  }
+};
+
+const fetchOrderDetail = async (orderId: number) => {
+  try {
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/order_detail?order_id=${orderId}`
+    );
+    if (!response.ok) throw new Error("Network response was not ok");
+    return await response.json();
+  } catch (error) {
+    console.error("Error fetching order details:", error);
+    return [];
   }
 };
 
 const TableSection: FC = () => {
   const [orders, setOrders] = useState<any[]>([]);
-  const [users, setUsers] = useState<Users[]>([]); // กำหนดประเภทเป็น User
-  const [address, setAddress] = useState<Record<number, Address | null>>({}); // เปลี่ยนเป็น Record
+  const [users, setUsers] = useState<Users[]>([]);
+  const [address, setAddress] = useState<Record<number, Address | null>>({});
   const [isLoading, setIsLoading] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [orderDetail, setOrderDetail] = useState<any[]>([]);
+  const [selectedOrder, setSelectedOrder] = useState<any | null>(null);
 
   useEffect(() => {
     const getData = async () => {
@@ -86,15 +93,14 @@ const TableSection: FC = () => {
       setOrders(ordersData);
       setUsers(usersData);
 
-      // ดึงที่อยู่สำหรับทุกผู้ใช้
-      const addressPromises = usersData.map(async (users: Users) => {
-        const address = await fetchAddress(users.user_id); // เช็ค user_id ของผู้ใช้ที่กำลังดึง
-        return { userId: users.user_id, address };
+      const addressPromises = usersData.map(async (user: Users) => {
+        const userAddress = await fetchAddress(user.user_id);
+        return { userId: user.user_id, address: userAddress };
       });
 
       const addressData = await Promise.all(addressPromises);
       const addressMap = addressData.reduce((acc, { userId, address }) => {
-        acc[userId] = address; // กำหนดที่อยู่ของแต่ละ user_id
+        acc[userId] = address;
         return acc;
       }, {} as Record<number, Address | null>);
 
@@ -103,46 +109,54 @@ const TableSection: FC = () => {
     };
 
     getData();
-  }, []); // ใช้ [] เพื่อให้ effect นี้ทำงานครั้งเดียว
+  }, []);
 
   const isEmpty = orders.length === 0;
-  const [rowsPerPage] = React.useState(10);
-  const [page, setPage] = React.useState(1);
+  const [rowsPerPage] = useState(10);
+  const [page, setPage] = useState(1);
   const pages = Math.ceil(orders.length / rowsPerPage);
 
   const items = useMemo(() => {
     const start = (page - 1) * rowsPerPage;
-    const end = start + rowsPerPage;
-    return orders.slice(start, end);
+    return orders.slice(start, start + rowsPerPage);
   }, [page, rowsPerPage, orders]);
 
   const getUserFullName = (userId: number) => {
-    const user = users.find((user) => user.user_id === userId);
+    const user = users.find((u) => u.user_id === userId);
     return user ? `${user.name} ${user.lastname}` : "ไม่พบข้อมูลผู้ใช้";
   };
 
-  const formatAddress = (address: Address | null) => {
-    if (!address) return "-"; // ถ้าไม่มีที่อยู่ให้แสดงข้อความ "-"
-    return `${address.address_name}, ${address.district}, ${address.amphoe}, ${address.province} ${address.zipcode}`;
+  const formatAddress = (userAddress: Address | null) => {
+    return userAddress
+      ? `${userAddress.address_name}, ${userAddress.district}, ${userAddress.amphoe}, ${userAddress.province} ${userAddress.zipcode}`
+      : "-";
   };
 
-  if (isLoading) {
-    return <div>Loading...</div>;
-  }
+  const handleViewOrderDetails = async (orderId: number) => {
+    // ดึงข้อมูลคำสั่งซื้อ
+    const orderDetailData = await fetchOrderDetail(orderId);
+    setOrderDetail(orderDetailData);
+
+    // ตั้งค่าคำสั่งซื้อที่เลือกเพื่อส่งไปยัง modal
+    const selectedOrder = orders.find((order) => order.order_id === orderId);
+    setSelectedOrder(selectedOrder);
+
+    // เปิด modal
+    setIsModalOpen(true);
+  };
+
+  if (isLoading) return <div>Loading...</div>;
 
   return (
     <div className="mt-2">
       <Table
-        topContent={<></>}
         aria-label="table"
         color="danger"
         radius="lg"
         emptyWrapper={isEmpty}
         bottomContentPlacement="outside"
         bottomContent={
-          isEmpty ? (
-            <></>
-          ) : (
+          isEmpty ? null : (
             <Pagination
               showControls
               page={page}
@@ -182,11 +196,25 @@ const TableSection: FC = () => {
                   : "ไม่ระบุ"}
               </TableCell>
               <TableCell>{order.order_status}</TableCell>
-              <TableCell>{order.detail}</TableCell>
+              <TableCell>
+                <button
+                  onClick={() => handleViewOrderDetails(order.order_id)}
+                  className="text-blue-500 underline"
+                >
+                  รายละเอียด
+                </button>
+              </TableCell>
             </TableRow>
           ))}
         </TableBody>
       </Table>
+
+      <OrderDetailModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        order={selectedOrder}
+        orderDetail={orderDetail}
+      />
     </div>
   );
 };

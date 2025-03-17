@@ -14,6 +14,7 @@ export interface Brands {
 export type Products = {
   pro_id?: number;
   pro_name: string;
+  sku?: string;
   pro_des: string;
   category_id: number;
   brand_id: number;
@@ -33,6 +34,7 @@ const AddProduct: React.FC<AddProductProps> = ({
   const [productForms, setProductForms] = useState<Products[]>([
     {
       pro_name: "",
+      sku: "",
       pro_des: "",
       category_id: 0,
       brand_id: 0,
@@ -82,6 +84,7 @@ const AddProduct: React.FC<AddProductProps> = ({
       for (const product of productForms) {
         if (
           !product.pro_name ||
+          !product.sku ||
           !product.pro_des ||
           product.category_id === 0 ||
           product.brand_id === 0
@@ -107,6 +110,7 @@ const AddProduct: React.FC<AddProductProps> = ({
             },
             body: JSON.stringify({
               pro_name: product.pro_name,
+              sku: product.sku,
               pro_des: product.pro_des,
               category_id: product.category_id,
               brand_id: product.brand_id,
@@ -130,6 +134,7 @@ const AddProduct: React.FC<AddProductProps> = ({
       setProductForms([
         {
           pro_name: "",
+          sku: "",
           pro_des: "",
           category_id: 0,
           brand_id: 0,
@@ -156,6 +161,7 @@ const AddProduct: React.FC<AddProductProps> = ({
       ...productForms,
       {
         pro_name: "",
+        sku: "",
         pro_des: "",
         category_id: 0,
         brand_id: 0,
@@ -179,6 +185,15 @@ const AddProduct: React.FC<AddProductProps> = ({
                 value={product.pro_name}
                 onChange={(e) =>
                   handleProductChange(index, "pro_name", e.target.value)
+                }
+                className="border p-2 rounded w-full mb-2"
+              />
+              <input
+                type="text"
+                placeholder="บาร์โค้ดสินค้า"
+                value={product.sku}
+                onChange={(e) =>
+                  handleProductChange(index, "sku", e.target.value)
                 }
                 className="border p-2 rounded w-full mb-2"
               />
