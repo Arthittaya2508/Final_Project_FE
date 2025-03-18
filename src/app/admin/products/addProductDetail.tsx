@@ -26,7 +26,7 @@ const AddProductDetail: React.FC<AddProductDetailProps> = ({
     {
       pro_id: 0,
       color_id: 0,
-      pro_image: "",
+      pro_image: "" as string | File,
     },
   ]);
   const [colors, setColors] = useState<
@@ -92,28 +92,39 @@ const AddProductDetail: React.FC<AddProductDetailProps> = ({
       const updatedProductDetails = [...productDetails];
       updatedProductDetails[index] = {
         ...updatedProductDetails[index],
-        pro_image: file.name,
+        pro_image: file, // Store the File object here
       };
       setProductDetails(updatedProductDetails);
     }
   };
-
   const handleSubmit = async () => {
     try {
-      setLoading(true); // Set loading to true before the request
+      setLoading(true);
 
-      const dataToSend = productDetails.map((detail) => ({
-        ...detail,
-        pro_id,
-      }));
-      console.log("ส่งข้อมูล:", dataToSend);
+      const formData = new FormData();
+
+      productDetails.forEach((detail) => {
+        // ตรวจสอบว่า 'pro_id' และ 'color_id' ถูกส่งไป
+        console.log(
+          "โปรดตรวจสอบค่าของ pro_id และ color_id:",
+          pro_id,
+          detail.color_id
+        );
+        formData.append("pro_id", pro_id.toString());
+        formData.append("color_id", detail.color_id.toString());
+
+        // ตรวจสอบว่าไฟล์ 'pro_image' ถูกแนบไปหรือไม่
+        if (detail.pro_image instanceof File) {
+          console.log("โปรดตรวจสอบไฟล์ที่ส่ง:", detail.pro_image);
+          formData.append("pro_image", detail.pro_image);
+        }
+      });
 
       const apiBase =
         process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
       const response = await fetch(`${apiBase}/product_details`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(dataToSend),
+        body: formData,
       });
 
       if (!response.ok) {
@@ -135,7 +146,7 @@ const AddProductDetail: React.FC<AddProductDetailProps> = ({
         "error"
       );
     } finally {
-      setLoading(false); // Set loading to false after the request
+      setLoading(false);
     }
   };
 

@@ -29,15 +29,6 @@ export type Colors = {
   color_name: string;
 };
 
-export type Genders = {
-  gender_id: number;
-  gender_name: string;
-};
-
-export type Sizes = {
-  size_id: number;
-  size_name: string;
-};
 export type Products = {
   pro_id: number;
   sku: string;
@@ -50,8 +41,6 @@ const ProductDetailPage = () => {
 
   const [productDetail, setProductDetail] = useState<ProductDetail[]>([]);
   const [colors, setColors] = useState<Colors[]>([]);
-  const [sizes, setSizes] = useState<Sizes[]>([]);
-  const [genders, setGenders] = useState<Genders[]>([]);
   const [products, setProducts] = useState<Products[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -105,8 +94,7 @@ const ProductDetailPage = () => {
         ]);
 
       setColors(colorsData);
-      setSizes(sizesData);
-      setGenders(gendersData);
+
       setProducts(productsData);
     } catch (error) {
       setError("เกิดข้อผิดพลาดในการโหลดข้อมูลเสริม");
@@ -158,15 +146,12 @@ const ProductDetailPage = () => {
 
           <TableBody>
             {productDetail.map((productDetail) => {
+              // Find the color name using the color_id from productDetail
               const colorName =
                 colors.find((c) => c.color_id === productDetail.color_id)
                   ?.color_name || "ไม่ระบุ";
-              const sizeName =
-                sizes.find((s) => s.size_id === productDetail.size_id)
-                  ?.size_name || "ไม่ระบุ";
-              const genderName =
-                genders.find((g) => g.gender_id === productDetail.gender_id)
-                  ?.gender_name || "ไม่ระบุ";
+
+              // Find the product name (SKU) from the products array
               const productName =
                 products.find((g) => g.pro_id === productDetail.pro_id)?.sku ||
                 "ไม่ระบุ";
@@ -177,11 +162,20 @@ const ProductDetailPage = () => {
                   <TableCell>{productName}</TableCell>
                   <TableCell>
                     {productDetail.pro_image ? (
-                      <img
-                        src={productDetail.pro_image}
-                        alt="Product"
-                        width={100}
-                      />
+                      // Check if the image is base64 encoded or a file path
+                      productDetail.pro_image.startsWith("data:image/") ? (
+                        <img
+                          src={productDetail.pro_image} // If base64, use directly
+                          alt="Product"
+                          width={100}
+                        />
+                      ) : (
+                        <img
+                          src={`/images/${productDetail.pro_image}`} // If file path, adjust to public path
+                          alt="Product"
+                          width={100}
+                        />
+                      )
                     ) : (
                       "ไม่มีรูปภาพ"
                     )}
@@ -195,7 +189,7 @@ const ProductDetailPage = () => {
                       router.push(
                         `/admin/products/itemProduct?pro_detail_id=${productDetail.pro_detail_id}`
                       )
-                    } // Navigate to itemProduct
+                    }
                   >
                     รายละเอียด
                   </TableCell>

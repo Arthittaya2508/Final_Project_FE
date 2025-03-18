@@ -130,15 +130,16 @@ const TableSection: FC = () => {
   };
 
   const handleViewOrderDetails = async (orderId: number) => {
-    const orderDetailData = await fetchOrderDetail(orderId);
-    setOrderDetail(orderDetailData);
-
     const selectedOrder = orders.find((order) => order.order_id === orderId);
-    setSelectedOrder(selectedOrder);
+    setSelectedOrder(selectedOrder || null); // ตั้งค่า order ที่เลือกก่อน
+
+    if (selectedOrder) {
+      const orderDetailData = await fetchOrderDetail(orderId);
+      setOrderDetail(orderDetailData);
+    }
 
     setIsModalOpen(true);
   };
-
   const fetchAddress = async (userId: number) => {
     try {
       const response = await axios.get(
@@ -278,8 +279,8 @@ const TableSection: FC = () => {
       <OrderDetailModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        order={selectedOrder}
-        orderDetail={orderDetail}
+        order={selectedOrder} // ส่งคำสั่งซื้อที่เลือก
+        orderDetail={orderDetail} // ส่งรายละเอียดของ order นั้นๆ
       />
     </div>
   );
