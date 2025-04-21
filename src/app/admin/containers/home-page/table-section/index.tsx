@@ -1,8 +1,6 @@
 import React, { FC, useMemo, useState, useEffect } from "react";
-import Button from "@/components/ui/Buttons";
 import Pagination from "@/components/ui/Pagination/index";
 import Table from "@/components/ui/Table";
-import OrderDetailModal from "@/app/admin/dashboard/orderDetailModal";
 import { columns } from "../../../../../lib/data";
 import {
   TableBody,
@@ -11,7 +9,7 @@ import {
   TableHeader,
   TableRow,
 } from "@heroui/react";
-import axios from "axios";
+import Link from "next/link";
 
 export type Users = {
   user_id: number;
@@ -29,9 +27,14 @@ export type Address = {
   zipcode: string;
 };
 
-export type status_orders = {
+export type StatusOrders = {
   status_id: number;
   status_name: string;
+};
+
+export type Transports = {
+  transport_id: number;
+  transport_name: string;
 };
 
 export type Order = {
@@ -41,6 +44,7 @@ export type Order = {
   total_amount: number;
   shipping_date: number;
   status_id: number;
+  transport_id: number;
 };
 
 const orderStatuses = [
@@ -56,43 +60,59 @@ const TableSection: FC = () => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [users, setUsers] = useState<Users[]>([]);
   const [address, setAddress] = useState<Record<number, Address | null>>({});
-  const [statusOrders, setStatusOrders] = useState<status_orders[]>([]);
+  const [statusOrders, setStatusOrders] = useState<StatusOrders[]>([]);
+  const [transports, setTransports] = useState<Transports[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [orderDetail, setOrderDetail] = useState<any[]>([]);
-  const [selectedOrder, setSelectedOrder] = useState<any | null>(null);
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [filteredOrders, setFilteredOrders] = useState<Order[]>([]);
-  const [selectedStatus, setSelectedStatus] = useState<number | null>(1); // Set default status to "ที่ยังไม่ได้รับ" (status_id = 1)
+  const [selectedStatus, setSelectedStatus] = useState<number | null>(1);
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const ordersResponse = await axios.get(
-          `${process.env.NEXT_PUBLIC_API_URL}/orders`
+        const ordersRes = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/orderAdmin`
         );
-        const usersResponse = await axios.get(
-          `${process.env.NEXT_PUBLIC_API_URL}/users`
+        const usersRes = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/userAdmin`
         );
-        const statusOrdersResponse = await axios.get(
+        const statusRes = await fetch(
           `${process.env.NEXT_PUBLIC_API_URL}/status_orders`
         );
+        const transportsRes = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/transports`
+        );
 
-        setOrders(ordersResponse.data);
-        setUsers(usersResponse.data);
-        setStatusOrders(statusOrdersResponse.data);
+        const ordersData = await ordersRes.json();
+        const usersData = await usersRes.json();
+        const statusData = await statusRes.json();
+        const transportsData = await transportsRes.json();
 
-        const addressPromises = usersResponse.data.map(async (user: Users) => {
-          const userAddress = await fetchAddress(user.user_id);
-          return { userId: user.user_id, address: userAddress };
-        });
+        const sortedOrders = ordersData.sort(
+          (a: Order, b: Order) => b.order_date - a.order_date
+        );
 
-        const addressData = await Promise.all(addressPromises);
-        const addressMap = addressData.reduce((acc, { userId, address }) => {
-          acc[userId] = address;
-          return acc;
-        }, {} as Record<number, Address | null>);
+        setOrders(sortedOrders);
+        setUsers(usersData);
+        setStatusOrders(statusData);
+        setTransports(transportsData);
 
-        setAddress(addressMap);
+        const addressData = await Promise.all(
+          usersData.map(async (user: Users) => ({
+            userId: user.user_id,
+            address: await fetchAddress(user.user_id),
+          }))
+        );
+
+        setAddress(
+          Object.fromEntries(
+            addressData.map(({ userId, address }) => [userId, address])
+          )
+        );
+
         setIsLoading(false);
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -103,14 +123,11 @@ const TableSection: FC = () => {
   }, []);
 
   useEffect(() => {
-    if (selectedStatus !== null) {
-      const filtered = orders.filter(
-        (order) => order.status_id === selectedStatus
-      );
-      setFilteredOrders(filtered);
-    } else {
-      setFilteredOrders(orders);
-    }
+    setFilteredOrders(
+      selectedStatus !== null
+        ? orders.filter((order) => order.status_id === selectedStatus)
+        : orders
+    );
   }, [selectedStatus, orders]);
 
   const getUserFullName = (userId: number) => {
@@ -118,9 +135,9 @@ const TableSection: FC = () => {
     return user ? `${user.name} ${user.lastname}` : "ไม่พบข้อมูลผู้ใช้";
   };
 
-  const getStatusName = (statusId: number) => {
-    const status = statusOrders.find((status) => status.status_id === statusId);
-    return status ? status.status_name : "ไม่ระบุ";
+  const getTransportName = (transportId: number) => {
+    const transport = transports.find((t) => t.transport_id === transportId);
+    return transport ? transport.transport_name : "ไม่ระบุ";
   };
 
   const formatAddress = (userAddress: Address | null) => {
@@ -130,22 +147,19 @@ const TableSection: FC = () => {
   };
 
   const handleViewOrderDetails = async (orderId: number) => {
-    const selectedOrder = orders.find((order) => order.order_id === orderId);
-    setSelectedOrder(selectedOrder || null); // ตั้งค่า order ที่เลือกก่อน
-
-    if (selectedOrder) {
-      const orderDetailData = await fetchOrderDetail(orderId);
-      setOrderDetail(orderDetailData);
-    }
-
+    const order = orders.find((o) => o.order_id === orderId);
+    setSelectedOrder(order || null);
+    setOrderDetail(order ? await fetchOrderDetail(orderId) : []);
     setIsModalOpen(true);
   };
+
   const fetchAddress = async (userId: number) => {
     try {
-      const response = await axios.get(
+      const res = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/address?user_id=${userId}`
       );
-      return response.data[0] || null;
+      const data = await res.json();
+      return data[0] || null;
     } catch (error) {
       console.error("Error fetching address:", error);
       return null;
@@ -154,10 +168,11 @@ const TableSection: FC = () => {
 
   const fetchOrderDetail = async (orderId: number) => {
     try {
-      const response = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL}/order_detail?order_id=${orderId}`
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/order_details?order_id=${orderId}`
       );
-      return response.data;
+      const data = await res.json();
+      return data;
     } catch (error) {
       console.error("Error fetching order details:", error);
       return [];
@@ -173,49 +188,69 @@ const TableSection: FC = () => {
   const [page, setPage] = useState(1);
   const pages = Math.ceil(filteredOrders.length / rowsPerPage);
 
+  const sortedFilteredOrders = useMemo(() => {
+    return [...filteredOrders].sort((a, b) =>
+      sortOrder === "asc"
+        ? new Date(a.order_date).getTime() - new Date(b.order_date).getTime()
+        : new Date(b.order_date).getTime() - new Date(a.order_date).getTime()
+    );
+  }, [filteredOrders, sortOrder]);
+
   const items = useMemo(() => {
     const start = (page - 1) * rowsPerPage;
-    return filteredOrders.slice(start, start + rowsPerPage);
-  }, [page, rowsPerPage, filteredOrders]);
-
-  if (isLoading) return <div>Loading...</div>;
+    return sortedFilteredOrders.slice(start, start + rowsPerPage);
+  }, [page, rowsPerPage, sortedFilteredOrders]);
 
   return (
-    <div className="mt-2">
-      <div className=" mb-6">
-        <div className="flex items-center min-w-[800px]">
-          {orderStatuses.map((status, index) => (
-            <React.Fragment key={status.label}>
+    <div className=" mb-6">
+      <div className="flex items-center min-w-[800px]">
+        {orderStatuses.map((status, index) => (
+          <React.Fragment key={status.label}>
+            <div
+              className="flex flex-col items-center cursor"
+              onClick={() => handleStatusChange(status.status_id)}
+            >
               <div
-                className="flex flex-col items-center cursor"
-                onClick={() => handleStatusChange(status.status_id)}
+                className={`${
+                  status.bgColor
+                } w-10 h-10 lg:w-12 lg:h-12 rounded-full flex items-center justify-center text-white font-bold text-sm lg:text-base cursor-pointer ${
+                  selectedStatus === status.status_id
+                    ? "ring-4 ring-indigo-500"
+                    : "" // เพิ่มวงกลมรอบสถานะที่เลือก
+                }`}
+                onClick={() => handleStatusChange(status.status_id)} // เพิ่มการคลิกเพื่อเลือกสถานะ
               >
-                <div
-                  className={`${
-                    status.bgColor
-                  } w-10 h-10 lg:w-12 lg:h-12 rounded-full flex items-center justify-center text-white font-bold text-sm lg:text-base cursor-pointer ${
-                    selectedStatus === status.status_id
-                      ? "ring-4 ring-indigo-500"
-                      : "" // เพิ่มวงกลมรอบสถานะที่เลือก
-                  }`}
-                  onClick={() => handleStatusChange(status.status_id)} // เพิ่มการคลิกเพื่อเลือกสถานะ
-                >
-                  {orders.filter(
-                    (order) => order.status_id === status.status_id
-                  ).length || 0}
-                </div>
-                <span className="text-xs lg:text-sm mt-2 text-center w-20 lg:w-24 cursor">
-                  {status.label}
-                </span>
+                {orders.filter((order) => order.status_id === status.status_id)
+                  .length || 0}
               </div>
-              {index < orderStatuses.length - 1 && (
-                <div className="h-[2px] bg-gray-300 flex-grow mx-2" />
-              )}
-            </React.Fragment>
-          ))}
-        </div>
+              <span className="text-xs lg:text-sm mt-2 text-center w-20 lg:w-24 cursor">
+                {status.label}
+              </span>
+            </div>
+            {index < orderStatuses.length - 1 && (
+              <div className="h-[2px] bg-gray-300 flex-grow mx-2" />
+            )}
+          </React.Fragment>
+        ))}
       </div>
 
+      {/* 🔽 ตัวเลือกเรียงวันที่ */}
+      <div className="flex justify-end p-2 ">
+        <div className="flex items-center space-x-2 rounded-lg px-3 py-2 shadow-sm">
+          <label className="text-sm font-medium text-gray-700">
+            เรียงตามวันที่:
+          </label>
+          <select
+            value={sortOrder}
+            onChange={(e) => setSortOrder(e.target.value as "asc" | "desc")}
+            className="text-sm border border-gray-300 rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+          >
+            <option value="desc">ใหม่ → เก่า</option>
+            <option value="asc">เก่า → ใหม่</option>
+          </select>
+        </div>
+      </div>
+      {/* ตาราง */}
       <Table
         aria-label="table"
         color="danger"
@@ -258,30 +293,34 @@ const TableSection: FC = () => {
               </TableCell>
               <TableCell>{order.total_amount ?? "ไม่ระบุ"}</TableCell>
               <TableCell>
-                {order.shipping_date
-                  ? new Date(order.shipping_date).toLocaleDateString()
-                  : "ไม่ระบุ"}
+                {(() => {
+                  const status = orderStatuses.find(
+                    (s) => s.status_id === order.status_id
+                  );
+                  return (
+                    <span
+                      className={`px-3 py-1 rounded-full text-white text-xs font-semibold ${
+                        status?.bgColor || "bg-gray-400"
+                      }`}
+                    >
+                      {status?.label || "ไม่ระบุ"}
+                    </span>
+                  );
+                })()}
               </TableCell>
-              <TableCell>{getStatusName(order.status_id)}</TableCell>
               <TableCell>
-                <button
-                  onClick={() => handleViewOrderDetails(order.order_id)}
-                  className="text-blue-500 underline"
+                <Link
+                  href={`/admin/dashboard/order_details?order_id=${order.order_id}`}
                 >
-                  รายละเอียด
-                </button>
+                  <button className="text-blue-600 underline">
+                    ดูรายละเอียด
+                  </button>
+                </Link>
               </TableCell>
             </TableRow>
           ))}
         </TableBody>
       </Table>
-
-      <OrderDetailModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        order={selectedOrder} // ส่งคำสั่งซื้อที่เลือก
-        orderDetail={orderDetail} // ส่งรายละเอียดของ order นั้นๆ
-      />
     </div>
   );
 };

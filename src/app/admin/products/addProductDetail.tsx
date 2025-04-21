@@ -26,7 +26,7 @@ const AddProductDetail: React.FC<AddProductDetailProps> = ({
     {
       pro_id: 0,
       color_id: 0,
-      pro_image: "" as string | File,
+      pro_image: "" as string, // ใช้ชื่อไฟล์แทน File object
     },
   ]);
   const [colors, setColors] = useState<
@@ -92,11 +92,12 @@ const AddProductDetail: React.FC<AddProductDetailProps> = ({
       const updatedProductDetails = [...productDetails];
       updatedProductDetails[index] = {
         ...updatedProductDetails[index],
-        pro_image: file, // Store the File object here
+        pro_image: file.name, // เก็บชื่อไฟล์แทนการเก็บไฟล์
       };
       setProductDetails(updatedProductDetails);
     }
   };
+
   const handleSubmit = async () => {
     try {
       setLoading(true);
@@ -113,10 +114,10 @@ const AddProductDetail: React.FC<AddProductDetailProps> = ({
         formData.append("pro_id", pro_id.toString());
         formData.append("color_id", detail.color_id.toString());
 
-        // ตรวจสอบว่าไฟล์ 'pro_image' ถูกแนบไปหรือไม่
-        if (detail.pro_image instanceof File) {
-          console.log("โปรดตรวจสอบไฟล์ที่ส่ง:", detail.pro_image);
-          formData.append("pro_image", detail.pro_image);
+        // ส่งชื่อไฟล์ 'pro_image' แทนการแนบไฟล์จริง
+        if (detail.pro_image) {
+          console.log("โปรดตรวจสอบชื่อไฟล์ที่ส่ง:", detail.pro_image);
+          formData.append("pro_image", detail.pro_image); // ส่งชื่อไฟล์
         }
       });
 

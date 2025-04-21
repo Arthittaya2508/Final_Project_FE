@@ -57,7 +57,7 @@ export default function ProductPage({
         </section>
         <Tabs />
       </div>
-      <div className="mb-[50px] sm:mb-20">
+      <div className="mb-[50px] sm:mb-20 mt-36">
         <ProductListSec
           title="สินค้าที่คล้ายกัน"
           data={relatedProductData.map((product) => ({

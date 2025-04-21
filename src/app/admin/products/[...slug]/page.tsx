@@ -141,7 +141,6 @@ const ProductDetailPage = () => {
             <TableColumn>สี</TableColumn>
             {/* <TableColumn>🚻 เพศ</TableColumn> */}
             <TableColumn>รายละเอียด</TableColumn>
-            <TableColumn>action</TableColumn>
           </TableHeader>
 
           <TableBody>
@@ -192,9 +191,6 @@ const ProductDetailPage = () => {
                     }
                   >
                     รายละเอียด
-                  </TableCell>
-                  <TableCell>
-                    <SlOptionsVertical />
                   </TableCell>
                 </TableRow>
               );

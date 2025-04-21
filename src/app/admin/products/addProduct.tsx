@@ -11,6 +11,11 @@ export interface Brands {
   brand_name: string;
 }
 
+export interface Genders {
+  gender_id: number;
+  gender_name: string;
+}
+
 export type Products = {
   pro_id?: number;
   pro_name: string;
@@ -18,6 +23,7 @@ export type Products = {
   pro_des: string;
   category_id: number;
   brand_id: number;
+  gender_id: number;
 };
 
 interface AddProductProps {
@@ -38,24 +44,29 @@ const AddProduct: React.FC<AddProductProps> = ({
       pro_des: "",
       category_id: 0,
       brand_id: 0,
+      gender_id: 0,
     },
   ]);
 
   const [categories, setCategories] = useState<Categories[]>([]);
   const [brands, setBrands] = useState<Brands[]>([]);
+  const [genders, setGenders] = useState<Genders[]>([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [categoriesResponse, brandsResponse] = await Promise.all([
-          fetch(`${process.env.NEXT_PUBLIC_API_URL}/categories`),
-          fetch(`${process.env.NEXT_PUBLIC_API_URL}/brands`),
-        ]);
+        const [categoriesResponse, brandsResponse, gendersRes] =
+          await Promise.all([
+            fetch(`${process.env.NEXT_PUBLIC_API_URL}/categories`),
+            fetch(`${process.env.NEXT_PUBLIC_API_URL}/brands`),
+            fetch(`${process.env.NEXT_PUBLIC_API_URL}/genders`),
+          ]);
 
-        if (categoriesResponse.ok && brandsResponse.ok) {
+        if (categoriesResponse.ok && brandsResponse.ok && gendersRes.ok) {
           setCategories(await categoriesResponse.json());
           setBrands(await brandsResponse.json());
+          setGenders(await gendersRes.json());
         } else {
           throw new Error("Failed to fetch data");
         }
@@ -87,7 +98,8 @@ const AddProduct: React.FC<AddProductProps> = ({
           !product.sku ||
           !product.pro_des ||
           product.category_id === 0 ||
-          product.brand_id === 0
+          product.brand_id === 0 ||
+          product.gender_id === 0
         ) {
           Swal.fire({
             title: "ข้อผิดพลาด!",
@@ -114,6 +126,7 @@ const AddProduct: React.FC<AddProductProps> = ({
               pro_des: product.pro_des,
               category_id: product.category_id,
               brand_id: product.brand_id,
+              gender_id: product.gender_id, // เพิ่ม gender_id ที่นี่
             }),
           }
         );
@@ -138,6 +151,7 @@ const AddProduct: React.FC<AddProductProps> = ({
           pro_des: "",
           category_id: 0,
           brand_id: 0,
+          gender_id: 0,
         },
       ]);
 
@@ -165,6 +179,7 @@ const AddProduct: React.FC<AddProductProps> = ({
         pro_des: "",
         category_id: 0,
         brand_id: 0,
+        gender_id: 0,
       },
     ]);
   };
@@ -241,10 +256,29 @@ const AddProduct: React.FC<AddProductProps> = ({
                 className="border p-2 rounded w-full mb-2"
                 aria-label="เลือกแบรนด์สินค้า"
               >
-                <option value={0}>เลือกแบรนด์สินค้า</option>
+                <option value={0}>เลือกสินค้า</option>
                 {brands.map((brand) => (
                   <option key={brand.brand_id} value={brand.brand_id}>
                     {brand.brand_name}
+                  </option>
+                ))}
+              </select>
+              <select
+                value={product.gender_id}
+                onChange={(e) =>
+                  handleProductChange(
+                    index,
+                    "gender_id",
+                    parseInt(e.target.value)
+                  )
+                }
+                className="border p-2 rounded w-full mb-2"
+                aria-label="เลือกประเภทเพศสินค้า"
+              >
+                <option value={0}>เลือกประเภทเพศสินค้า</option>
+                {genders.map((gender) => (
+                  <option key={gender.gender_id} value={gender.gender_id}>
+                    {gender.gender_name}
                   </option>
                 ))}
               </select>

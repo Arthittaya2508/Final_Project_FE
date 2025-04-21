@@ -12,7 +12,7 @@ import EmployeesTable from "./employeesTable";
 function User() {
   return (
     <div className="flex-1 p-4 ">
-      <h1 className="text-xl lg:text-2xl font-bold ">ข้อมูลลูกค้า</h1>
+      <h1 className="text-xl lg:text-2xl font-bold ">ข้อมูลพนักงาน</h1>
       <div>
         <EmployeesTable />
       </div>

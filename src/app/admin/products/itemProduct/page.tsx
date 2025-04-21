@@ -104,7 +104,7 @@ const ItemProductDetailsPage = () => {
         <Table aria-label="product-details-table">
           <TableHeader>
             <TableColumn>ลำดับที่</TableColumn>
-            <TableColumn>🖼️ สี</TableColumn>
+            {/* <TableColumn>🖼️ สี</TableColumn> */}
             <TableColumn>🚻 ขนาด</TableColumn>
             <TableColumn>จำนวน</TableColumn>
             <TableColumn>ราคาขาย</TableColumn>
@@ -123,7 +123,7 @@ const ItemProductDetailsPage = () => {
               return (
                 <TableRow key={item.detail_id}>
                   <TableCell>{index + 1}</TableCell>
-                  <TableCell>{colorName}</TableCell>
+                  {/* <TableCell>{colorName}</TableCell> */}
                   <TableCell>{sizeName}</TableCell>
                   <TableCell>{item.stock_quantity}</TableCell>
                   <TableCell>{item.sale_price}</TableCell>

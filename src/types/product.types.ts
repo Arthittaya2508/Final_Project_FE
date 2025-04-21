@@ -13,4 +13,3 @@ export type Product = {
   rating: number;
   description: string;
 };
-

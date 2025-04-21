@@ -21,6 +21,7 @@ export type Products = {
   pro_des: string;
   category_id: number;
   brand_id: number;
+  gender_id: number;
 };
 
 export type Categories = {
@@ -32,36 +33,50 @@ export type Brands = {
   brand_id: number;
   brand_name: string;
 };
-
+export type Genders = {
+  gender_id: number;
+  gender_name: string;
+};
 const ProductTable: FC = () => {
   const [orders, setOrders] = useState<Products[]>([]);
   const [categories, setCategories] = useState<Categories[]>([]);
   const [brands, setBrands] = useState<Brands[]>([]);
+  const [genders, setGenders] = useState<Genders[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   // ฟังก์ชัน fetchData ที่สามารถเรียกใช้ได้จากที่อื่น
   const fetchData = async () => {
     try {
-      const [productsRes, categoriesRes, brandsRes] = await Promise.all([
-        fetch(`${process.env.NEXT_PUBLIC_API_URL}/products`),
-        fetch(`${process.env.NEXT_PUBLIC_API_URL}/categories`),
-        fetch(`${process.env.NEXT_PUBLIC_API_URL}/brands`),
-      ]);
+      const [productsRes, categoriesRes, brandsRes, genderRes] =
+        await Promise.all([
+          fetch(`${process.env.NEXT_PUBLIC_API_URL}/products`),
+          fetch(`${process.env.NEXT_PUBLIC_API_URL}/categories`),
+          fetch(`${process.env.NEXT_PUBLIC_API_URL}/brands`),
+          fetch(`${process.env.NEXT_PUBLIC_API_URL}/genders`),
+        ]);
 
-      if (!productsRes.ok || !categoriesRes.ok || !brandsRes.ok) {
+      if (
+        !productsRes.ok ||
+        !categoriesRes.ok ||
+        !brandsRes.ok ||
+        !genderRes.ok
+      ) {
         throw new Error("Failed to fetch data");
       }
 
-      const [productsData, categoriesData, brandsData] = await Promise.all([
-        productsRes.json(),
-        categoriesRes.json(),
-        brandsRes.json(),
-      ]);
+      const [productsData, categoriesData, brandsData, gendersData] =
+        await Promise.all([
+          productsRes.json(),
+          categoriesRes.json(),
+          brandsRes.json(),
+          genderRes.json(),
+        ]);
 
       setOrders(productsData);
       setCategories(categoriesData);
       setBrands(brandsData);
+      setGenders(gendersData);
     } catch (error) {
       console.error("Error fetching data:", error);
     } finally {
@@ -151,14 +166,19 @@ const ProductTable: FC = () => {
               brands.find((b) => b.brand_id === product.brand_id)?.brand_name ||
               "ไม่ระบุ";
 
+            const genderName =
+              genders.find((g) => g.gender_id === product.gender_id)
+                ?.gender_name || "ไม่ระบุ";
+
             return (
               <TableRow key={product.pro_id}>
                 <TableCell>{product.pro_id}</TableCell>
                 <TableCell>{product.sku}</TableCell>
-                <TableCell>{product.pro_name}</TableCell>
-                <TableCell>{product.pro_des}</TableCell>
+                <TableCell className="w-56">{product.pro_name}</TableCell>
+                <TableCell className="w-60">{product.pro_des}</TableCell>
                 <TableCell>{categoryName}</TableCell>
                 <TableCell>{brandName}</TableCell>
+                <TableCell>{genderName}</TableCell>
                 <TableCell>
                   <Link
                     href={`/admin/products/product_details?pro_id=${product.pro_id}`}

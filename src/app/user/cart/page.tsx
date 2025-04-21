@@ -1,5 +1,5 @@
+// pages/cart/CartPage.tsx
 "use client";
-
 import BreadcrumbCart from "../../../components/cart-page/BreadcrumbCart";
 import ProductCard from "../../../components/cart-page/ProductCard";
 import { Button } from "../../../components/ui/button";
@@ -8,10 +8,11 @@ import { integralCF } from "../../../styles/fonts";
 import { FaArrowRight } from "react-icons/fa6";
 import { MdOutlineLocalOffer } from "react-icons/md";
 import { TbBasketExclamation } from "react-icons/tb";
-import React from "react";
+import React, { useState } from "react";
 import { RootState } from "../../..//lib/store";
 import { useAppSelector } from "../../../lib/hooks/redux";
 import Link from "next/link";
+import OrderModal from "./orderModal";
 
 // ฟังก์ชันนี้แสดงราคาเป็นเงินบาท (THB)
 const formatPrice = (price: number) => {
@@ -25,6 +26,15 @@ export default function CartPage() {
   const { cart, totalPrice, adjustedTotalPrice } = useAppSelector(
     (state: RootState) => state.carts
   );
+  const [isModalOpen, setIsModalOpen] = useState(false); // State สำหรับเปิด-ปิด Modal
+
+  const handleOrderClick = () => {
+    setIsModalOpen(true); // เปิด Modal เมื่อคลิกที่ปุ่มสั่งซื้อ
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false); // ปิด Modal
+  };
 
   return (
     <main className="pb-20">
@@ -90,8 +100,9 @@ export default function CartPage() {
                 <Button
                   type="button"
                   className="text-sm md:text-base font-medium bg-te-papa-green-800 rounded-full w-full py-4 h-[54px] md:h-[60px] group"
+                  onClick={handleOrderClick} // เปิด Modal เมื่อคลิก
                 >
-                  Go to Checkout{" "}
+                  สั่งซื้อสินค้า{" "}
                   <FaArrowRight className="text-xl ml-2 group-hover:translate-x-1 transition-all" />
                 </Button>
               </div>
@@ -109,6 +120,9 @@ export default function CartPage() {
             </Button>
           </div>
         )}
+
+        {/* Use the modal component here */}
+        <OrderModal isOpen={isModalOpen} onClose={handleCloseModal} />
       </div>
     </main>
   );

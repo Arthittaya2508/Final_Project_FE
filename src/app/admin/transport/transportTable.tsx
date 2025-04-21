@@ -121,8 +121,8 @@ const TransportsTable: FC = () => {
             <TableRow key={transport.transport_id}>
               <TableCell>{transport.transport_id}</TableCell>
               <TableCell>{transport.transport_name}</TableCell>
-              <TableCell>{transport.transport_cost}</TableCell>
-              <TableCell>รายละเอียด</TableCell>
+              {/* <TableCell>{transport.transport_cost}</TableCell> */}
+              {/* <TableCell>รายละเอียด</TableCell> */}
             </TableRow>
           ))}
         </TableBody>

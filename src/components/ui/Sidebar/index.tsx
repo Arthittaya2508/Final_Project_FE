@@ -49,24 +49,29 @@ const menuItems = [
   },
   {
     label: "ข้อมูลลูกค้า",
-    icon: <TbLogout />,
+    icon: <TbBriefcase />,
     href: "/admin/customer",
   },
   {
     label: "ข้อมูลพนักงาน",
-    icon: <TbHome />,
+    icon: <TbBriefcase />,
     href: "/admin/employee",
   },
   {
     label: "ข้อมูลบริษัท",
-    icon: <TbHome />,
+    icon: <TbBriefcase />,
     href: "/admin/company",
   },
   {
-    label: "ข้อมูลรับเข้า",
-    icon: <TbHome />,
-    href: "/admin/import",
+    label: "สั่งซื้อ/รับเข้า",
+    icon: <TbBriefcase />,
+    href: "#",
+    submenu: [
+      { label: "ข้อมูลสั่งซื้อ", href: "/admin/order_history" },
+      { label: "ข้อมูลรับเข้า", href: "/admin/import" },
+    ],
   },
+
   {
     label: "ข้อมูลรายงาน",
     icon: <TbBriefcase />,
@@ -75,14 +80,12 @@ const menuItems = [
       { label: "รายงานสินค้าขายดี", href: "/admin/productsReport" },
       { label: "รายงานการขาย", href: "/admin/salesReport" },
       { label: "รายงานการรับเข้า", href: "/admin/importReport" },
-      // { label: "รายงานการส่งของ", href: "/admin/transportReport" },
-      // { label: "รายงานการออกสินค้า", href: "/admin/saleReport" },
     ],
   },
   {
     label: "logout",
     icon: <TbLogout />,
-    href: "/customer",
+    href: "/login",
     isBottom: true,
   },
 ];

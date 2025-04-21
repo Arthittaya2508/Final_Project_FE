@@ -1,4 +1,3 @@
-//RegisterModal
 import { useState, useEffect } from "react";
 import Swal from "sweetalert2";
 import {
@@ -7,12 +6,12 @@ import {
   AiOutlineEyeInvisible,
 } from "react-icons/ai";
 
-interface Address {
-  district: string; // ตำบล
-  amphoe: string; // อำเภอ
-  province: string; // จังหวัด
-  zipcode: number;
-}
+// interface Address {
+//   district: string;
+//   amphoe: string;
+//   province: string;
+//   zipcode: number;
+// }
 
 interface ModalProps {
   isOpen: boolean;
@@ -36,14 +35,14 @@ const RegisterModal: React.FC<ModalProps> = ({ isOpen, onClose }) => {
   });
 
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
-  const [addressOptions, setAddressOptions] = useState<Address[]>([]);
+  const [usernameError, setUsernameError] = useState<string>(""); // Track username error
 
   useEffect(() => {
     const fetchAddressData = async () => {
       try {
         const response = await fetch("/json/address.json");
-        const data: Address[] = await response.json();
-        setAddressOptions(data);
+        // const data: Address[] = await response.json();
+        // setAddressOptions(data);
       } catch (error) {
         console.error("Failed to fetch address data:", error);
       }
@@ -52,101 +51,90 @@ const RegisterModal: React.FC<ModalProps> = ({ isOpen, onClose }) => {
     fetchAddressData();
   }, []);
 
-  const provinces = [
-    ...new Set(addressOptions.map((address) => address.province)),
-  ].sort((a, b) => a.localeCompare(b, "th"));
-
-  const amphoes = formData.province
-    ? [
-        ...new Set(
-          addressOptions
-            .filter((address) => address.province === formData.province)
-            .map((address) => address.amphoe)
-        ),
-      ].sort((a, b) => a.localeCompare(b, "th"))
-    : [];
-
-  const districts = formData.amphoe
-    ? [
-        ...new Set(
-          addressOptions
-            .filter((address) => address.amphoe === formData.amphoe)
-            .map((address) => address.district)
-        ),
-      ].sort((a, b) => a.localeCompare(b, "th"))
-    : [];
-
-  useEffect(() => {
-    const address = addressOptions.find(
-      (addr) =>
-        addr.province === formData.province &&
-        addr.amphoe === formData.amphoe &&
-        addr.district === formData.district
-    );
-    if (address) {
-      setFormData((prev) => ({
-        ...prev,
-        postalCode: address.zipcode.toString(),
-      }));
-    }
-  }, [formData.province, formData.amphoe, formData.district, addressOptions]);
-
-  const handleChange = (
+  const handleChange = async (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
-    setFormData({
-      ...formData,
+
+    setFormData((prev) => ({
+      ...prev,
       [name]: value,
-    });
+    }));
+
+    if (name === "username") {
+      // Check if the username already exists
+      try {
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/users/exists?username=${value}`
+        );
+        const data = await response.json();
+        if (data.exists) {
+          setUsernameError("Username is already taken.");
+        } else {
+          setUsernameError(""); // Clear error if username is available
+        }
+      } catch (error) {
+        console.error("Error checking username:", error);
+        setUsernameError("ชื่อผู้ใช้นี้มีอยู่ในระบบแล้ว!");
+      }
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    try {
-      // Register user and address in the database
-      const response = await fetch("/api/users", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          name: formData.name,
-          lastname: formData.lastname,
-          address: formData.address,
-          telephone: formData.telephone,
-          email: formData.email,
-          username: formData.username,
-          password: formData.password,
-          image: formData.image,
-          district: formData.district,
-          amphoe: formData.amphoe,
-          province: formData.province,
-          zipcode: formData.postalCode,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to register user and address.");
-      }
-
-      // Show success message
-      Swal.fire({
-        title: "Success!",
-        text: "Registration and address saved successfully!",
-        icon: "success",
-        confirmButtonText: "OK",
-      }).then(() => {
-        onClose(); // Close the modal
-      });
-    } catch (error) {
-      // Show error message
+    // If there is a username error, do not submit the form
+    if (usernameError) {
       Swal.fire({
         title: "Error!",
-        text: "Registration failed. Please try again.",
+        text: "Please fix the errors before submitting.",
         icon: "error",
         confirmButtonText: "OK",
+      });
+      return;
+    }
+
+    try {
+      // Send user data to API
+      const userResponse = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/users`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            name: formData.name,
+            lastname: formData.lastname,
+            email: formData.email,
+            username: formData.username,
+            password: formData.password,
+            telephone: formData.telephone,
+          }),
+        }
+      );
+
+      if (!userResponse.ok) {
+        throw new Error("Failed to register user.");
+      }
+
+      const userData = await userResponse.json();
+      const userId = userData.id; // Get userId from API response
+
+      Swal.fire({
+        title: "สำเร็จ!",
+        text: "การลงทะเบียนเสร็จสมบูรณ์แล้ว!",
+        icon: "success",
+        confirmButtonText: "ตกลง",
+      }).then(() => {
+        onClose();
+      });
+    } catch (error) {
+      Swal.fire({
+        title: "ข้อผิดพลาด!",
+        text: "การลงทะเบียนล้มเหลว กรุณาลองอีกครั้ง.",
+        icon: "error",
+        confirmButtonText: "ตกลง",
       });
       console.error("Registration failed:", error);
     }
@@ -170,10 +158,10 @@ const RegisterModal: React.FC<ModalProps> = ({ isOpen, onClose }) => {
         <h2 className="text-3xl font-semibold text-center text-gray-800 mb-6">
           Register
         </h2>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4 text-left">
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div>
-              <label className="block text-gray-900">ชื่อ</label>
+              <label className="block text-gray-900 text-left">ชื่อ</label>
               <input
                 type="text"
                 name="name"
@@ -197,88 +185,9 @@ const RegisterModal: React.FC<ModalProps> = ({ isOpen, onClose }) => {
               />
             </div>
           </div>
-          <div>
-            <label className="block text-gray-900">ที่อยู่</label>
-            <input
-              type="text"
-              name="address"
-              value={formData.address}
-              onChange={handleChange}
-              placeholder="address"
-              className="w-full p-3 border text-gray-900 border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              required
-            />
-          </div>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div>
-              <label className="block text-gray-900">จังหวัด</label>
-              <select
-                name="province"
-                value={formData.province}
-                onChange={handleChange}
-                className="w-full p-3 border text-gray-900 border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                required
-              >
-                <option value="">เลือกจังหวัด</option>
-                {provinces.map((province, index) => (
-                  <option key={index} value={province}>
-                    {province}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="block text-gray-900">อำเภอ</label>
-              <select
-                name="amphoe"
-                value={formData.amphoe}
-                onChange={handleChange}
-                className="w-full p-3 border text-gray-900 border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                required
-                disabled={!formData.province}
-              >
-                <option value="">เลือกอำเภอ</option>
-                {amphoes.map((amphoe, index) => (
-                  <option key={index} value={amphoe}>
-                    {amphoe}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            <div>
-              <label className="block text-gray-900">ตำบล</label>
-              <select
-                name="district"
-                value={formData.district}
-                onChange={handleChange}
-                className="w-full p-3 border text-gray-900 border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                required
-                disabled={!formData.amphoe}
-              >
-                <option value="">เลือกตำบล</option>
-                {districts.map((district, index) => (
-                  <option key={index} value={district}>
-                    {district}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="block text-gray-900">รหัสไปรษณีย์</label>
-              <input
-                type="text"
-                name="postalCode"
-                value={formData.postalCode}
-                readOnly
-                className="w-full p-3 border text-gray-900 border-gray-300 rounded-lg shadow-sm focus:outline-none"
-              />
-            </div>
-          </div>
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            <div>
-              <label className="block text-gray-900">เบอร์โทร</label>
+              <label className="block text-gray-900">หมายเลขโทรศัพท์</label>
               <input
                 type="text"
                 name="telephone"
@@ -311,9 +220,14 @@ const RegisterModal: React.FC<ModalProps> = ({ isOpen, onClose }) => {
                 value={formData.username}
                 onChange={handleChange}
                 placeholder="Username"
-                className="w-full p-3 border text-gray-900 border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className={`w-full p-3 border text-gray-900 border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                  usernameError ? "border-red-500" : ""
+                }`}
                 required
               />
+              {usernameError && (
+                <p className="text-red-500 text-sm">{usernameError}</p>
+              )}
             </div>
             <div>
               <label className="block text-gray-900">รหัสผ่าน</label>
@@ -330,32 +244,21 @@ const RegisterModal: React.FC<ModalProps> = ({ isOpen, onClose }) => {
                 <button
                   type="button"
                   onClick={togglePasswordVisibility}
-                  className="absolute inset-y-0 right-0 flex items-center px-3 text-gray-600"
+                  className="absolute top-4 right-3 z-10 text-gray-900"
                 >
                   {isPasswordVisible ? (
-                    <AiOutlineEye size={24} />
+                    <AiOutlineEye size={20} />
                   ) : (
-                    <AiOutlineEyeInvisible size={24} />
+                    <AiOutlineEyeInvisible size={20} />
                   )}
                 </button>
               </div>
             </div>
           </div>
-          <div>
-            <label className="block text-gray-900">รูปภาพ</label>
-            <input
-              type="text"
-              name="image"
-              value={formData.image}
-              onChange={handleChange}
-              placeholder="Image URL"
-              className="w-full p-3 border text-gray-900 border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-          <div className="flex justify-end mt-4">
+          <div className="flex justify-center space-x-4 mt-6">
             <button
               type="submit"
-              className="bg-blue-500 text-white px-6 py-2 rounded-lg shadow-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="bg-blue-500 text-white p-3 rounded-lg hover:bg-blue-600 w-full md:w-1/2"
             >
               Register
             </button>

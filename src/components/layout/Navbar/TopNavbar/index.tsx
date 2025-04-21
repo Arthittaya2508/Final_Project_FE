@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { cn } from "../../../../lib/utils";
 import Link from "next/link";
 import { NavMenu } from "../navbar.types";
@@ -25,25 +25,25 @@ const data: NavMenu = [
         id: 11,
         label: "ผู้ชาย",
         url: "/user/shop#men-clothes",
-        description: "In attractive and spectacular colors and designs",
+        description: "เสื้อผ้าดีไซน์เท่ สปอร์ต และทันสมัยสำหรับทุกโอกาส",
       },
       {
         id: 12,
         label: "ผู้หญิง",
         url: "/user/shop#women-clothes",
-        description: "Ladies, your style and tastes are important to us",
+        description: "แฟชั่นสวยมีสไตล์ ใส่ได้ทุกวัน เพิ่มความมั่นใจให้คุณ",
       },
       {
         id: 13,
         label: "เด็ก",
         url: "/user/shop#kids-clothes",
-        description: "For all ages, with happy and beautiful colors",
+        description: "เสื้อผ้าสีสันสดใส ใส่สบาย เหมาะกับทุกวัย",
       },
       {
         id: 14,
         label: "อุปกรณ์กีฬา",
         url: "/user/shop#bag-shoes",
-        description: "Suitable for men, women and all tastes and styles",
+        description: "อุปกรณ์คุณภาพ สำหรับทุกกิจกรรมกีฬาและไลฟ์สไตล์",
       },
     ],
   },
@@ -51,7 +51,7 @@ const data: NavMenu = [
     id: 2,
     type: "MenuItem",
     label: "ประเภทสินค้า",
-    url: "/user/shop#on-sale",
+    url: "/user/shop#category",
     children: [],
   },
   {
@@ -67,10 +67,15 @@ const TopNavbar = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLoginForm, setIsLoginForm] = useState(true);
   const [registerModal, setRegisterModal] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false); // State to control dropdown visibility
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
-    setIsLoginForm(true); // เพิ่มบรรทัดนี้เพื่อกลับไปที่ Login
+    setIsLoginForm(true); // Reset to Login form when modal is closed
+  };
+
+  const toggleDropdown = () => {
+    setIsDropdownOpen(!isDropdownOpen); // Toggle dropdown visibility
   };
 
   return (
@@ -119,10 +124,10 @@ const TopNavbar = () => {
             className="bg-transparent placeholder:text-black/40"
           />
         </InputGroup>
-        <div className="flex items-center">
+        <div className="flex items-center relative">
           <CartBtn />
           <button
-            onClick={() => setIsModalOpen(true)}
+            onClick={toggleDropdown} // Toggle dropdown visibility
             className="p-1"
             aria-label="User login"
           >
@@ -135,56 +140,50 @@ const TopNavbar = () => {
               className="max-w-[22px] max-h-[22px]"
             />
           </button>
+
+          {/* Dropdown menu */}
+          {isDropdownOpen && (
+            <div className="absolute right-0 top-full mt-2 bg-white border rounded-md shadow-lg w-48">
+              <ul>
+                <li>
+                  <Link
+                    href="/user/userProfile"
+                    className="block px-4 py-2 text-sm text-gray-700"
+                  >
+                    ข้อมูลผู้ใช้
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/user/myAddress"
+                    className="block px-4 py-2 text-sm text-gray-700"
+                  >
+                    ที่อยู่ของฉัน
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/user/history"
+                    className="block px-4 py-2 text-sm text-gray-700"
+                  >
+                    ประวัติการสั่งซื้อ
+                  </Link>
+                </li>
+                <hr className="border-t-black/10" />
+                <li>
+                  {/* Redirect to /guest on logout */}
+                  <Link
+                    href="/guest"
+                    className="block px-4 py-2 text-sm text-gray-700 w-full text-left"
+                  >
+                    ออกจากระบบ
+                  </Link>
+                </li>
+              </ul>
+            </div>
+          )}
         </div>
       </div>
-
-      {/* Login Modal */}
-      {isModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-          <div className="bg-white p-6 rounded-lg w-[300px] md:w-[400px] relative">
-            <h2 className="text-center text-xl font-semibold mb-4">
-              {isLoginForm ? "Login" : "Register"}
-            </h2>
-            {isLoginForm ? (
-              <form>
-                <input
-                  type="email"
-                  placeholder="Email"
-                  className="w-full p-2 border border-gray-300 rounded-md mb-4"
-                  required
-                />
-                <input
-                  type="password"
-                  placeholder="Password"
-                  className="w-full p-2 border border-gray-300 rounded-md mb-4"
-                  required
-                />
-                <p
-                  className="text-blue-500 cursor-pointer text-center mb-4"
-                  onClick={() => setIsLoginForm(false)}
-                >
-                  สมัครสมาชิก
-                </p>
-                <button
-                  type="submit"
-                  className="w-full bg-blue-500 text-white p-2 rounded-md"
-                >
-                  Login
-                </button>
-              </form>
-            ) : (
-              <RegisterModal isOpen={isModalOpen} onClose={handleCloseModal} />
-            )}
-            <button
-              onClick={handleCloseModal}
-              className="absolute top-2 right-2 text-gray-600"
-              title="Close Modal"
-            >
-              ×
-            </button>
-          </div>
-        </div>
-      )}
     </nav>
   );
 };

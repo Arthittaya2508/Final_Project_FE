@@ -1,205 +1,264 @@
 "use client";
-import { useState, useEffect } from "react";
-import Button from "@/components/ui/Buttons";
-import { Doughnut } from "react-chartjs-2";
+
+import { useState, useMemo } from "react";
 import {
-  Chart as ChartJS,
-  CategoryScale,
-  ArcElement,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
   Tooltip,
-  Legend,
-} from "chart.js";
-import { format } from "date-fns";
-import { th } from "date-fns/locale";
+  ResponsiveContainer,
+  Cell,
+} from "recharts";
+import { Card, CardContent } from "@/components/ui/Card";
+import {
+  Select,
+  SelectTrigger,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import * as XLSX from "xlsx";
+import { saveAs } from "file-saver";
 
-ChartJS.register(CategoryScale, ArcElement, Tooltip, Legend);
-
-type SalesData = {
-  date: string;
-  billNo: string;
-  productName: string; // เพิ่มชื่อสินค้า
+// ประกาศ type
+type Product = {
+  name: string;
   quantity: number;
-  totalPrice: number;
-  cost: number;
-  profit: number;
+  color?: string;
 };
 
-const SalesReport = () => {
-  const [selectedTab, setSelectedTab] = useState<"week" | "month">("week");
-  const [salesData, setSalesData] = useState<SalesData[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [selectedDate, setSelectedDate] = useState(new Date());
+type ProductData = {
+  bestSelling: Product[];
+  worstSelling: Product[];
+};
 
-  const fetchSalesData = async () => {
-    setLoading(true);
-    try {
-      let data: SalesData[] = [];
-      const currentDate = new Date();
-      const dateRange = getDateRange(selectedTab, currentDate);
+const mockData: Record<string, ProductData> = {
+  "2025-01": {
+    bestSelling: [
+      { name: "Warrix เสื้อโปโล", quantity: 120 },
+      { name: "กางเกง Warrix ", quantity: 95 },
+      { name: "ลูกฟุตบอล รุ่นF5D1000-TL1 ", quantity: 75 },
+      { name: "กางเกงวอร์ม", quantity: 75 },
+      { name: "เสื้อฟุตบอลคอกลมแขนสั้น", quantity: 75 },
+    ],
+    worstSelling: [
+      { name: "ถุงมือผู้รักษาประตูฟุตบอล ", quantity: 8 },
+      { name: "รองเท้าฟุตซอล", quantity: 5 },
+      { name: "FBT กางเกงวอร์มขาจั๊ม", quantity: 2 },
+      { name: "แว่นกันแดด", quantity: 2 },
+      { name: "ลูกปิงปอง", quantity: 2 },
+    ],
+  },
+  "2025-02": {
+    bestSelling: [
+      { name: "FBT กางเกงวิ่งสีล้วน(แบบบาง)", quantity: 100 },
+      { name: "Warrix Classic Polo Shirt", quantity: 80 },
+      { name: "รองเท้าฟุตซอล", quantity: 60 },
+      { name: "กางเกง Warrix", quantity: 60 },
+      { name: "แว่นกันแดด", quantity: 60 },
+    ],
+    worstSelling: [
+      { name: "ผ้าคาดศีรษะ", quantity: 6 },
+      { name: "ถุงเท้า ", quantity: 4 },
+      { name: "GRAND SPORT กางเกงวอร์มขาปล่อย", quantity: 1 },
+      { name: "สนับมือ ", quantity: 1 },
+      { name: "สนับมือ ", quantity: 1 },
+    ],
+  },
+  "2025-03": {
+    bestSelling: [
+      { name: "เสื้อกีฬา G", quantity: 100 },
+      { name: "หมวกกีฬา", quantity: 80 },
+      { name: "รองเท้า ", quantity: 60 },
+      { name: "รองเท้า ", quantity: 60 },
+      { name: "รองเท้า ", quantity: 60 },
+    ],
+    worstSelling: [
+      { name: "ผ้าคาดศีรษะ J", quantity: 6 },
+      { name: "ถุงเท้า K", quantity: 4 },
+      { name: "สนับมือ L", quantity: 1 },
+      { name: "สนับมือ L", quantity: 1 },
+      { name: "สนับมือ L", quantity: 1 },
+    ],
+  },
+  "2025-04": {
+    bestSelling: [
+      { name: "เสื้อกีฬา G", quantity: 100 },
+      { name: "หมวก H", quantity: 80 },
+      { name: "รองเท้า I", quantity: 60 },
+      { name: "รองเท้า I", quantity: 60 },
+      { name: "รองเท้า I", quantity: 60 },
+    ],
+    worstSelling: [
+      { name: "ผ้าคาดศีรษะ J", quantity: 6 },
+      { name: "ถุงเท้า K", quantity: 4 },
+      { name: "สนับมือ L", quantity: 1 },
+      { name: "สนับมือ L", quantity: 1 },
+      { name: "GRAND SPORT กางเกงวอร์มขาปล่อย", quantity: 1 },
+    ],
+  },
+};
 
-      for (let i = 0; i < dateRange.length; i++) {
-        const quantity = Math.floor(Math.random() * 50) + 1;
-        const totalPrice = quantity * (Math.floor(Math.random() * 500) + 50);
-        const cost = totalPrice * 0.7;
-        const profit = totalPrice - cost;
-        data.push({
-          date: dateRange[i],
-          billNo: `BILL-${i + 1}`,
-          productName: `สินค้า ${i + 1}`, // สร้างชื่อสินค้า
-          quantity,
-          totalPrice,
-          cost,
-          profit,
-        });
-      }
+// พาเลตสี
+const colorPalette = [
+  "#f87171",
+  "#fb923c",
+  "#facc15",
+  "#4ade80",
+  "#60a5fa",
+  "#a78bfa",
+  "#f472b6",
+  "#34d399",
+  "#818cf8",
+  "#fcd34d",
+];
 
-      setSalesData(data);
-    } catch (error) {
-      console.error("Error fetching sales data:", error);
-    } finally {
-      setLoading(false);
+export default function ProductReportPage() {
+  const [month, setMonth] = useState("2025-01");
+  const [type, setType] = useState<"bestSelling" | "worstSelling">(
+    "bestSelling"
+  );
+  const [search, setSearch] = useState("");
+
+  const rawData = mockData[month]?.[type] || [];
+
+  const filteredData = useMemo(() => {
+    return rawData
+      .filter((item: Product) =>
+        item.name.toLowerCase().includes(search.toLowerCase())
+      )
+      .map((item, index) => ({
+        ...item,
+        color: colorPalette[index % colorPalette.length],
+      }));
+  }, [search, rawData]);
+
+  const handleExport = () => {
+    const exportData = filteredData.map(({ name, quantity }) => ({
+      name,
+      quantity,
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(exportData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "รายงานสินค้า");
+
+    const excelBuffer = XLSX.write(workbook, {
+      bookType: "xlsx",
+      type: "array",
+    });
+    const data = new Blob([excelBuffer], { type: "application/octet-stream" });
+    saveAs(data, `รายงานสินค้า_${month}_${type}.xlsx`);
+  };
+
+  // ฟังก์ชันเพื่อแสดงชื่อเดือน
+  const getMonthName = (month: string) => {
+    switch (month) {
+      case "2025-01":
+        return "มกราคม 2025";
+      case "2025-02":
+        return "กุมภาพันธ์ 2025";
+      case "2025-03":
+        return "มีนาคม 2025";
+      case "2025-04":
+        return "เมษายน 2025";
+      default:
+        return "";
     }
   };
 
-  const getDateRange = (tab: "week" | "month", currentDate: Date) => {
-    const dateRange: string[] = [];
-    const currentYear = currentDate.getFullYear();
-    const currentMonth = currentDate.getMonth();
-    const currentDateOfMonth = currentDate.getDate();
-
-    if (tab === "week") {
-      const sunday = new Date(
-        currentDate.setDate(currentDateOfMonth - currentDate.getDay())
-      );
-      for (let i = 0; i < 7; i++) {
-        const date = new Date(sunday);
-        date.setDate(sunday.getDate() + i);
-        dateRange.push(format(date, "d MMMM yyyy", { locale: th }));
-      }
-    } else if (tab === "month") {
-      const firstDayOfMonth = new Date(currentYear, currentMonth, 1);
-      const lastDayOfMonth = new Date(currentYear, currentMonth + 1, 0);
-      let date = new Date(firstDayOfMonth);
-      while (date <= lastDayOfMonth) {
-        dateRange.push(format(date, "d MMMM yyyy", { locale: th }));
-        date.setDate(date.getDate() + 1);
-      }
-    }
-    return dateRange;
+  // ฟังก์ชันเพื่อแสดงประเภทสินค้า
+  const getTypeName = (type: "bestSelling" | "worstSelling") => {
+    return type === "bestSelling" ? "สินค้าขายดี" : "สินค้าขายไม่ดี";
   };
-
-  const getTopSellingProduct = () => {
-    const productSales = salesData.reduce(
-      (acc: { [key: string]: number }, item) => {
-        if (!acc[item.productName]) acc[item.productName] = 0;
-        acc[item.productName] += item.profit;
-        return acc;
-      },
-      {}
-    );
-
-    const sortedProductSales = Object.entries(productSales).sort(
-      (a, b) => b[1] - a[1]
-    );
-
-    return sortedProductSales[0];
-  };
-
-  useEffect(() => {
-    fetchSalesData();
-  }, [selectedTab, selectedDate]);
-
-  const topSellingProduct = getTopSellingProduct();
 
   return (
-    <div className="p-4">
-      <h1 className="text-xl lg:text-2xl font-bold ">รายงานสินค้าขายดี</h1>
-      <div className="flex gap-4 mb-6">
-        <Button onClick={() => setSelectedTab("week")}>ประจำสัปดาห์</Button>
-        <Button onClick={() => setSelectedTab("month")}>ประจำเดือน</Button>
-      </div>
+    <div className="p-6 space-y-6">
+      <h1 className="text-2xl text-center font-bold">รายงานสินค้า</h1>
 
-      <div className="mb-6">
-        <label className="mr-2">เลือกวันที่:</label>
-        <input
-          type="date"
-          value={format(selectedDate, "yyyy-MM-dd")}
-          onChange={(e) => setSelectedDate(new Date(e.target.value))}
-          className="border p-2 rounded"
+      <div className="flex flex-wrap gap-4 justify-center">
+        <Select value={month} onValueChange={setMonth}>
+          <SelectTrigger className="w-[150px]">
+            {getMonthName(month)}
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="2025-01">มกราคม 2025</SelectItem>
+            <SelectItem value="2025-02">กุมภาพันธ์ 2025</SelectItem>
+            <SelectItem value="2025-03">มีนาคม 2025</SelectItem>
+            <SelectItem value="2025-04">เมษายน 2025</SelectItem>
+          </SelectContent>
+        </Select>
+
+        <Select
+          value={type}
+          onValueChange={(value) => {
+            setType(value as "bestSelling" | "worstSelling");
+          }}
+        >
+          <SelectTrigger className="w-[180px]">
+            {getTypeName(type)}
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="bestSelling">สินค้าขายดี</SelectItem>
+            <SelectItem value="worstSelling">สินค้าขายไม่ดี</SelectItem>
+          </SelectContent>
+        </Select>
+
+        <Input
+          placeholder="ค้นหาชื่อสินค้า"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="w-[200px]"
         />
+
+        <Button onClick={handleExport} variant="outline">
+          Export เป็น Excel
+        </Button>
       </div>
 
-      <div className="mb-6">
-        <h2 className="text-lg font-semibold mb-2">สินค้าขายดีที่สุด</h2>
-        {topSellingProduct ? (
-          <div>
-            <p>สินค้า: {topSellingProduct[0]}</p>
-            <p>กำไร: {topSellingProduct[1].toLocaleString()} บาท</p>
-          </div>
-        ) : (
-          <p>ไม่พบข้อมูลสินค้าขายดี</p>
-        )}
-      </div>
+      {/* ส่วนกราฟ */}
 
-      <div className="flex flex-row gap-6 mb-6">
-        {loading ? (
-          <div className="text-center">กำลังโหลดข้อมูล...</div>
-        ) : (
-          <div className="w-[550px] flex justify-center">
-            <Doughnut
-              data={{
-                labels: salesData.map((item) => item.date),
-                datasets: [
-                  {
-                    label: "กำไร (บาท)",
-                    data: salesData.map((item) => item.profit),
-                    backgroundColor: ["#FF6384", "#36A2EB", "#FFCE56"],
-                    borderAlign: "inner",
-                  },
-                ],
-              }}
-            />
-          </div>
-        )}
-      </div>
+      <Card>
+        <CardContent className="h-[300px]">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={filteredData}>
+              <XAxis dataKey="name" />
+              <YAxis />
+              <Tooltip />
+              <Bar dataKey="quantity">
+                {filteredData.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={entry.color} />
+                ))}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        </CardContent>
+      </Card>
 
-      <div>
-        <h2 className="text-xl font-semibold mb-4">ข้อมูลสินค้าขายดี</h2>
-        <table className="w-full border-collapse border border-gray-300">
-          <thead>
-            <tr className="bg-gray-200">
-              <th className="border p-2">ลำดับที่</th>
-              <th className="border p-2">ชื่อสินค้า</th>
-              <th className="border p-2">วันที่</th>
-              {/* <th className="border p-2">เลขที่บิล</th> */}
-              <th className="border p-2">จำนวนสินค้า</th>
-              <th className="border p-2">ราคารวม (บาท)</th>
-              <th className="border p-2">ต้นทุน (บาท)</th>
-              <th className="border p-2">กำไร (บาท)</th>
+      {/* ส่วนตาราง */}
+
+      <h2 className="text-xl font-semibold mb-2">ตาราง</h2>
+      <table className="w-full table-auto border border-gray-300 bg-white">
+        <thead>
+          <tr>
+            <th className="p-2 border">ลำดับ</th>
+            <th className="p-2 border">ชื่อสินค้า</th>
+            <th className="p-2 border">จำนวนที่ขายได้(ชิ้น)</th>
+          </tr>
+        </thead>
+        <tbody>
+          {filteredData.map((item: Product, idx: number) => (
+            <tr key={idx}>
+              <td className="p-2 border text-center">{idx + 1}</td>
+
+              <td className="p-2 border">{item.name}</td>
+              <td className="p-2 border text-center">{item.quantity}</td>
             </tr>
-          </thead>
-          <tbody>
-            {salesData.map((item, index) => (
-              <tr key={index} className="text-center bg-white odd:bg-gray-100">
-                <td className="border p-2">{index + 1}</td>
-                <td className="border p-2">{item.productName}</td>
-                <td className="border p-2">{item.date}</td>
-                {/* <td className="border p-2">{item.billNo}</td> */}
-                <td className="border p-2">{item.quantity}</td>
-                <td className="border p-2">
-                  {item.totalPrice.toLocaleString()}
-                </td>
-                <td className="border p-2">{item.cost.toLocaleString()}</td>
-                <td className="border p-2 text-green-600 font-semibold">
-                  {item.profit.toLocaleString()}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
-};
-
-export default SalesReport;
+}

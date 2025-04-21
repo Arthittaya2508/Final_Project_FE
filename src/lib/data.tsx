@@ -1,9 +1,7 @@
 import { AiOutlineEye } from "react-icons/ai";
-import { BiBriefcaseAlt2 } from "react-icons/bi";
+
 import { CiBookmark, CiCircleInfo, CiEdit, CiTrash } from "react-icons/ci";
-import { HiOutlineUsers } from "react-icons/hi2";
-import { IoIosLogOut } from "react-icons/io";
-import { IoHomeOutline } from "react-icons/io5";
+
 //Tabbar
 
 export const tabs = [
@@ -90,8 +88,9 @@ export const columns = [
   { name: "ที่อยู่ที่จัดส่ง", uid: "address", sortable: true },
   { name: "วันเวลาสั่งซื้อ", uid: "dmy", sortable: true },
   { name: "ราคารวม", uid: "total" },
-  { name: "วันที่จัดส่ง", uid: "datetime" },
+  // { name: "วันที่จัดส่ง", uid: "datetime" },
   { name: "สถานะคำสั่งซื้อ", uid: "status" },
+  // { name: "ขนส่งที่จัดส่ง", uid: "transport" },
   { name: "รายละเอียด", uid: "detail" },
 ];
 export const product = [
@@ -101,13 +100,14 @@ export const product = [
   { name: "คำอธิบาย", uid: "description", sortable: true },
   { name: "ประเภท", uid: "category", sortable: true },
   { name: "แบรนด์", uid: "brand" },
+  { name: "ประเภทเพศ", uid: "gender" },
   { name: "รายละเอียด", uid: "detail" },
 ];
 export const transport = [
   { name: "ลำดับที่", uid: "id", sortable: true },
   { name: "ชื่อขนส่ง", uid: "sku", sortable: true },
-  { name: "ค่าส่ง", uid: "name", sortable: true },
-  { name: "รายละเอียด", uid: "detail" },
+  // { name: "ค่าส่ง", uid: "name", sortable: true },
+  // { name: "รายละเอียด", uid: "detail" },
 ];
 export const user = [
   { name: "ลำดับที่", uid: "id", sortable: true },

@@ -24,11 +24,12 @@ export default function RootLayout({
     <html lang="en">
       <body>
         <HolyLoader color="#868686" />
-        <TopBanner />
+        {/* <TopBanner /> */}
         <Providers>
           <TopNavbar />
           {children}
         </Providers>
+
         <Footer />
       </body>
     </html>

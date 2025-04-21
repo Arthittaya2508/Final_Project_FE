@@ -30,7 +30,7 @@ const UsersTable: FC = () => {
   const fetchData = async () => {
     try {
       const [usersRes] = await Promise.all([
-        fetch(`${process.env.NEXT_PUBLIC_API_URL}/users`), // ดึงข้อมูลผู้ใช้แทน
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/userAdmin`), // ดึงข้อมูลผู้ใช้แทน
       ]);
 
       if (!usersRes.ok) {

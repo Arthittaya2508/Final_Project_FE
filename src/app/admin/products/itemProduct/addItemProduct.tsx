@@ -131,7 +131,7 @@ const AddItemProduct: React.FC<AddItemProductProps> = ({
         <h2 className="text-2xl font-bold mb-4">เพิ่มรายละเอียดสินค้า</h2>
         {itemProductDetails.map((item, index) => (
           <div key={index}>
-            <label>สี</label>
+            {/* <label>สี</label>
             <select
               value={item.color_id}
               onChange={(e) =>
@@ -145,7 +145,7 @@ const AddItemProduct: React.FC<AddItemProductProps> = ({
                   {color.color_name}
                 </option>
               ))}
-            </select>
+            </select> */}
 
             <label>ขนาด</label>
             <select
