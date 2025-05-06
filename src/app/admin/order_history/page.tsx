@@ -1,352 +1,348 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 
-type OrderImport = {
-  order_import_id: number;
+type Company = { company_id: number; company_name: string };
+type Brand = { brand_id: number; brand_name: string; company_id: number };
+type Product = { pro_id: number; pro_name: string; brand_id: number };
+type Color = { color_id: number; color_name: string };
+type Size = { size_id: number; size_name: string };
+
+type CartItem = {
   company_id: number;
   brand_id: number;
   product_id: number;
-  color_id: number;
-  size_id: number;
-  quantity: number;
-  created_at: string;
-};
-
-type Company = {
-  company_id: number;
-  company_name: string;
-};
-
-type Brand = {
-  brand_id: number;
-  brand_name: string;
-  company_id: number;
-};
-
-type Product = {
-  pro_id: number;
-  pro_name: string;
-  brand_id: number;
-};
-
-type Color = {
+  product_name: string;
   color_id: number;
   color_name: string;
-};
-
-type Size = {
   size_id: number;
   size_name: string;
+  quantity: number;
+  price: number;
+  total: number;
 };
 
-const ReceiveProductHistoryPage = () => {
-  const [orderHistory, setOrderHistory] = useState<OrderImport[]>([]);
+const ReceiveProductPage = () => {
   const [companies, setCompanies] = useState<Company[]>([]);
   const [brands, setBrands] = useState<Brand[]>([]);
+  const [filteredBrands, setFilteredBrands] = useState<Brand[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [colors, setColors] = useState<Color[]>([]);
   const [sizes, setSizes] = useState<Size[]>([]);
-  const [isModalOpen, setIsModalOpen] = useState(false); // To control modal visibility
+  const [cart, setCart] = useState<CartItem[]>([]);
+
   const [selectedCompany, setSelectedCompany] = useState<number | null>(null);
   const [selectedBrand, setSelectedBrand] = useState<number | null>(null);
   const [selectedProduct, setSelectedProduct] = useState<number | null>(null);
   const [selectedColor, setSelectedColor] = useState<number | null>(null);
   const [selectedSize, setSelectedSize] = useState<number | null>(null);
   const [quantity, setQuantity] = useState<number>(1);
+  const [price, setPrice] = useState<number>(0);
+  const [total, setTotal] = useState<number>(0);
 
   useEffect(() => {
-    const fetchAll = async () => {
-      try {
-        const [orderRes, companyRes, brandRes, productRes, colorRes, sizeRes] =
-          await Promise.all([
-            fetch(`${process.env.NEXT_PUBLIC_API_URL}/order_import`),
-            fetch(`${process.env.NEXT_PUBLIC_API_URL}/company`),
-            fetch(`${process.env.NEXT_PUBLIC_API_URL}/brands`),
-            fetch(`${process.env.NEXT_PUBLIC_API_URL}/products`),
-            fetch(`${process.env.NEXT_PUBLIC_API_URL}/colors`),
-            fetch(`${process.env.NEXT_PUBLIC_API_URL}/sizes`),
-          ]);
+    setTotal(quantity * price);
+  }, [quantity, price]);
 
-        const [
-          orderData,
-          companyData,
-          brandData,
-          productData,
-          colorData,
-          sizeData,
-        ] = await Promise.all([
-          orderRes.json(),
-          companyRes.json(),
-          brandRes.json(),
-          productRes.json(),
-          colorRes.json(),
-          sizeRes.json(),
-        ]);
-
-        setOrderHistory(orderData);
-        setCompanies(companyData);
-        setBrands(brandData);
-        setProducts(productData);
-        setColors(colorData);
-        setSizes(sizeData);
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      }
-    };
-
-    fetchAll();
+  useEffect(() => {
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/company`)
+      .then((res) => res.json())
+      .then(setCompanies);
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/brands`)
+      .then((res) => res.json())
+      .then(setBrands);
   }, []);
 
-  // const generateOrderCode = (id: number) => {
-  //   const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-  //   const randomLetters = Array.from({ length: 3 }, () =>
-  //     letters.charAt(Math.floor(Math.random() * letters.length))
-  //   ).join("");
-  //   const randomNumbers = id.toString().padStart(4, "0");
-  //   return `ORD-${randomLetters}${randomNumbers}`;
-  // };
+  useEffect(() => {
+    if (selectedCompany) {
+      setFilteredBrands(brands.filter((b) => b.company_id === selectedCompany));
+    }
+  }, [selectedCompany, brands]);
 
-  const getCompanyName = (id: number) =>
-    companies.find((c) => c.company_id === id)?.company_name || "-";
+  useEffect(() => {
+    if (selectedBrand) {
+      fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/products?brand_id=${selectedBrand}`
+      )
+        .then((res) => res.json())
+        .then(setProducts);
+    }
+  }, [selectedBrand]);
 
-  const getBrandName = (id: number) =>
-    brands.find((b) => b.brand_id === id)?.brand_name || "-";
+  useEffect(() => {
+    if (selectedProduct) {
+      Promise.all([
+        fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/colors?product_id=${selectedProduct}`
+        ),
+        fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/sizes?product_id=${selectedProduct}`
+        ),
+      ])
+        .then(([colorRes, sizeRes]) =>
+          Promise.all([colorRes.json(), sizeRes.json()])
+        )
+        .then(([colors, sizes]) => {
+          setColors(colors);
+          setSizes(sizes);
+        });
+    }
+  }, [selectedProduct]);
 
-  const getProductName = (id: number) =>
-    products.find((p) => p.pro_id === id)?.pro_name || "-";
+  const handleAddToCart = () => {
+    if (
+      selectedCompany &&
+      selectedBrand &&
+      selectedProduct &&
+      selectedColor &&
+      selectedSize &&
+      quantity > 0
+    ) {
+      const product = products.find((p) => p.pro_id === selectedProduct);
+      const color = colors.find((c) => c.color_id === selectedColor);
+      const size = sizes.find((s) => s.size_id === selectedSize);
 
-  const getColorName = (id: number) =>
-    colors.find((c) => c.color_id === id)?.color_name || "-";
+      const newItem: CartItem = {
+        company_id: selectedCompany,
+        brand_id: selectedBrand,
+        product_id: selectedProduct,
+        product_name: product?.pro_name || "",
+        color_id: selectedColor,
+        color_name: color?.color_name || "",
+        size_id: selectedSize,
+        size_name: size?.size_name || "",
+        quantity,
+        price,
+        total,
+      };
+      setCart((prev) => [...prev, newItem]);
+    } else {
+      alert("กรุณากรอกข้อมูลให้ครบถ้วน");
+    }
+  };
 
-  const getSizeName = (id: number) =>
-    sizes.find((s) => s.size_id === id)?.size_name || "-";
+  const handleSubmitOrder = async () => {
+    if (cart.length === 0) {
+      alert("ยังไม่มีสินค้าที่จะสั่ง");
+      return;
+    }
 
-  const handleSubmitOrder = async (e: React.FormEvent) => {
-    e.preventDefault();
+    const total_quantity = cart.reduce((sum, item) => sum + item.quantity, 0);
+    const total_price = cart.reduce((sum, item) => sum + item.total, 0);
 
-    const orderData = {
-      company_id: selectedCompany,
-      brand_id: selectedBrand,
-      product_id: selectedProduct,
-      color_id: selectedColor,
-      size_id: selectedSize,
-      quantity,
+    const body = {
+      company_id: cart[0].company_id,
+      quantity: total_quantity,
+      total_price: total_price,
+      details: cart.map((item) => ({
+        pro_id: item.product_id,
+        brand_id: item.brand_id,
+        color_id: item.color_id,
+        size_id: item.size_id,
+        quantity: item.quantity,
+        cost_price: item.price,
+      })),
     };
 
     const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/order_import`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(orderData),
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
     });
 
     if (res.ok) {
-      alert("สั่งสินค้าสำเร็จ");
-      setIsModalOpen(false); // Close modal after successful order
+      const { order_import_id } = await res.json();
+      alert(`สั่งซื้อเรียบร้อยแล้ว (เลขที่: ${order_import_id})`);
+      setCart([]);
     } else {
-      alert("ไม่สามารถสั่งสินค้าได้");
+      alert("เกิดข้อผิดพลาดในการสั่งซื้อ");
     }
   };
 
   return (
-    <div className="max-w-6xl mx-auto p-6 bg-white shadow-lg rounded-lg">
-      <h1 className="text-2xl font-semibold text-center mb-6">
-        ประวัติการสั่งซื้อสินค้า
+    <div className="p-6 max-w-5xl mx-auto space-y-6">
+      <h1 className="text-2xl font-bold text-center text-gray-800">
+        สั่งซื้อสินค้าเข้าร้าน
       </h1>
 
-      {/* Button to open modal */}
-      <div className="mb-4 text-right">
-        <button
-          onClick={() => setIsModalOpen(true)}
-          className="py-2 px-4 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700"
-        >
-          สั่งซื้อสินค้า
-        </button>
-      </div>
+      {/* แบบฟอร์มเลือกสินค้า */}
+      <div className="bg-white p-6 rounded-2xl shadow space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div>
+            <label className="block text-sm font-medium mb-1">บริษัท</label>
+            <select
+              onChange={(e) => setSelectedCompany(+e.target.value)}
+              value={selectedCompany || ""}
+              className="w-full border rounded px-2 py-1"
+            >
+              <option value="">เลือกบริษัท</option>
+              {companies.map((c) => (
+                <option key={c.company_id} value={c.company_id}>
+                  {c.company_name}
+                </option>
+              ))}
+            </select>
+          </div>
 
-      {/* Modal for placing order */}
-      {isModalOpen && (
-        <div className="fixed inset-0 flex items-center justify-center bg-gray-500 bg-opacity-50">
-          <div className="bg-white p-6 rounded-lg shadow-lg w-[500px]">
-            <h2 className="text-xl font-semibold mb-4">สั่งซื้อสินค้า</h2>
-            <form onSubmit={handleSubmitOrder}>
-              <div>
-                <label className="block text-sm font-medium">เลือกบริษัท</label>
-                <select
-                  value={selectedCompany || ""}
-                  onChange={(e) => setSelectedCompany(Number(e.target.value))}
-                  className="w-full px-4 py-2 mt-1 border rounded-md"
-                >
-                  <option value="">--เลือกบริษัท--</option>
-                  {companies.map((company) => (
-                    <option key={company.company_id} value={company.company_id}>
-                      {company.company_name}
-                    </option>
-                  ))}
-                </select>
-              </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">แบรนด์</label>
+            <select
+              onChange={(e) => setSelectedBrand(+e.target.value)}
+              value={selectedBrand || ""}
+              className="w-full border rounded px-2 py-1"
+            >
+              <option value="">เลือกแบรนด์</option>
+              {filteredBrands.map((b) => (
+                <option key={b.brand_id} value={b.brand_id}>
+                  {b.brand_name}
+                </option>
+              ))}
+            </select>
+          </div>
 
-              <div>
-                <label className="block text-sm font-medium">เลือกแบรนด์</label>
-                <select
-                  value={selectedBrand || ""}
-                  onChange={(e) => setSelectedBrand(Number(e.target.value))}
-                  className="w-full px-4 py-2 mt-1 border rounded-md"
-                  disabled={!selectedCompany}
-                >
-                  <option value="">--เลือกแบรนด์--</option>
-                  {brands
-                    .filter((brand) => brand.company_id === selectedCompany)
-                    .map((brand) => (
-                      <option key={brand.brand_id} value={brand.brand_id}>
-                        {brand.brand_name}
-                      </option>
-                    ))}
-                </select>
-              </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">สินค้า</label>
+            <select
+              onChange={(e) => setSelectedProduct(+e.target.value)}
+              value={selectedProduct || ""}
+              className="w-full border rounded px-2 py-1"
+            >
+              <option value="">เลือกสินค้า</option>
+              {products.map((p) => (
+                <option key={p.pro_id} value={p.pro_id}>
+                  {p.pro_name}
+                </option>
+              ))}
+            </select>
+          </div>
 
-              <div>
-                <label className="block text-sm font-medium">เลือกสินค้า</label>
-                <select
-                  value={selectedProduct || ""}
-                  onChange={(e) => setSelectedProduct(Number(e.target.value))}
-                  className="w-full px-4 py-2 mt-1 border rounded-md"
-                  disabled={!selectedBrand}
-                >
-                  <option value="">--เลือกสินค้า--</option>
-                  {products.map((product) => (
-                    <option key={product.pro_id} value={product.pro_id}>
-                      {product.pro_name}
-                    </option>
-                  ))}
-                </select>
-              </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">สี</label>
+            <select
+              onChange={(e) => setSelectedColor(+e.target.value)}
+              value={selectedColor || ""}
+              className="w-full border rounded px-2 py-1"
+            >
+              <option value="">เลือกสี</option>
+              {colors.map((c) => (
+                <option key={c.color_id} value={c.color_id}>
+                  {c.color_name}
+                </option>
+              ))}
+            </select>
+          </div>
 
-              <div>
-                <label className="block text-sm font-medium">เลือกสี</label>
-                <select
-                  value={selectedColor || ""}
-                  onChange={(e) => setSelectedColor(Number(e.target.value))}
-                  className="w-full px-4 py-2 mt-1 border rounded-md"
-                  disabled={!selectedProduct}
-                >
-                  <option value="">--เลือกสี--</option>
-                  {colors.map((color) => (
-                    <option key={color.color_id} value={color.color_id}>
-                      {color.color_name}
-                    </option>
-                  ))}
-                </select>
-              </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">ขนาด</label>
+            <select
+              onChange={(e) => setSelectedSize(+e.target.value)}
+              value={selectedSize || ""}
+              className="w-full border rounded px-2 py-1"
+            >
+              <option value="">เลือกขนาด</option>
+              {sizes.map((s) => (
+                <option key={s.size_id} value={s.size_id}>
+                  {s.size_name}
+                </option>
+              ))}
+            </select>
+          </div>
 
-              <div>
-                <label className="block text-sm font-medium">เลือกขนาด</label>
-                <select
-                  value={selectedSize || ""}
-                  onChange={(e) => setSelectedSize(Number(e.target.value))}
-                  className="w-full px-4 py-2 mt-1 border rounded-md"
-                  disabled={!selectedColor}
-                >
-                  <option value="">--เลือกขนาด--</option>
-                  {sizes.map((size) => (
-                    <option key={size.size_id} value={size.size_id}>
-                      {size.size_name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium">จำนวน</label>
-                <input
-                  type="number"
-                  value={quantity}
-                  onChange={(e) => setQuantity(Number(e.target.value))}
-                  className="w-full px-4 py-2 mt-1 border rounded-md"
-                />
-              </div>
-
-              <div className="mt-4 flex justify-between">
-                <button
-                  type="button"
-                  onClick={() => setIsModalOpen(false)}
-                  className="py-2 px-4 bg-gray-400 text-white rounded-md"
-                >
-                  ปิด
-                </button>
-                <button
-                  type="submit"
-                  className="py-2 px-4 bg-blue-600 text-white rounded-md"
-                >
-                  สั่งซื้อ
-                </button>
-              </div>
-            </form>
+          <div className="flex space-x-2">
+            <div className="w-1/2">
+              <label className="block text-sm font-medium mb-1">จำนวน</label>
+              <input
+                type="number"
+                value={quantity}
+                min={1}
+                onChange={(e) => setQuantity(+e.target.value)}
+                className="w-full border rounded px-2 py-1"
+              />
+            </div>
+            <div className="w-1/2">
+              <label className="block text-sm font-medium mb-1">
+                ราคาต่อหน่วย
+              </label>
+              <input
+                type="number"
+                value={price}
+                min={0}
+                onChange={(e) => setPrice(+e.target.value)}
+                className="w-full border rounded px-2 py-1"
+              />
+            </div>
           </div>
         </div>
-      )}
 
-      <div className="overflow-x-auto mt-6">
-        <table className="min-w-full divide-y divide-gray-200 border">
-          <thead className="bg-gray-100">
-            <tr>
-              <th className="px-4 py-2 text-left text-sm font-medium">
-                เลขที่
-              </th>
-              <th className="px-4 py-2 text-left text-sm font-medium">
-                วันที่
-              </th>
-              <th className="px-4 py-2 text-left text-sm font-medium">
-                บริษัท
-              </th>
-              <th className="px-4 py-2 text-left text-sm font-medium">
-                แบรนด์
-              </th>
-              <th className="px-4 py-2 text-left text-sm font-medium">
-                สินค้า
-              </th>
-              <th className="px-4 py-2 text-left text-sm font-medium">สี</th>
-              <th className="px-4 py-2 text-left text-sm font-medium">ขนาด</th>
-              <th className="px-4 py-2 text-right text-sm font-medium">
-                จำนวน
-              </th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-200">
-            {orderHistory.map((order) => (
-              <tr key={order.order_import_id}>
-                <td className="px-4 py-2">{order.order_import_id}</td>
-                <td className="px-4 py-2">
-                  {new Date(order.created_at).toLocaleDateString("th-TH", {
-                    year: "numeric",
-                    month: "long",
-                    day: "numeric",
+        <div className="pt-4">
+          <button
+            className="w-full md:w-auto bg-blue-600 text-white px-6 py-2 rounded-xl hover:bg-blue-700 transition"
+            onClick={handleAddToCart}
+          >
+            + เพิ่มลงตะกร้า
+          </button>
+        </div>
+      </div>
+
+      {/* แสดงรายการสินค้า */}
+      <div className="bg-white p-6 rounded-2xl shadow">
+        <h2 className="text-lg font-semibold mb-4">รายการสินค้าในตะกร้า</h2>
+        {cart.length > 0 ? (
+          <>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm text-center border">
+                <thead className="bg-gray-100">
+                  <tr>
+                    <th className="border px-2 py-1">สินค้า</th>
+                    <th className="border px-2 py-1">สี</th>
+                    <th className="border px-2 py-1">ขนาด</th>
+                    <th className="border px-2 py-1">จำนวน</th>
+                    <th className="border px-2 py-1">ราคาต่อหน่วย</th>
+                    <th className="border px-2 py-1">รวม</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {cart.map((item, i) => (
+                    <tr key={i} className="border-t">
+                      <td className="border px-2 py-1">{item.product_name}</td>
+                      <td className="border px-2 py-1">{item.color_name}</td>
+                      <td className="border px-2 py-1">{item.size_name}</td>
+                      <td className="border px-2 py-1">{item.quantity}</td>
+                      <td className="border px-2 py-1">
+                        {item.price.toFixed(2)}
+                      </td>
+                      <td className="border px-2 py-1">
+                        {item.total.toFixed(2)}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            <div className="text-right mt-4">
+              <p className="text-lg font-semibold">
+                ยอดรวม:{" "}
+                {cart
+                  .reduce((sum, item) => sum + item.total, 0)
+                  .toLocaleString("th-TH", {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
                   })}{" "}
-                  เวลา{" "}
-                  {new Date(order.created_at).toLocaleTimeString("th-TH", {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                    hour12: false,
-                  })}
-                </td>
-                <td className="px-4 py-2">
-                  {getCompanyName(order.company_id)}
-                </td>
-                <td className="px-4 py-2">{getBrandName(order.brand_id)}</td>
-                <td className="px-4 py-2">
-                  {getProductName(order.product_id)}
-                </td>
-                <td className="px-4 py-2">{getColorName(order.color_id)}</td>
-                <td className="px-4 py-2">{getSizeName(order.size_id)}</td>
-                <td className="px-4 py-2 text-right">{order.quantity}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+                บาท
+              </p>
+              <button
+                className="mt-4 bg-green-600 text-white px-6 py-2 rounded-xl hover:bg-green-700 transition"
+                onClick={handleSubmitOrder}
+              >
+                ✔ สั่งซื้อสินค้า
+              </button>
+            </div>
+          </>
+        ) : (
+          <p className="text-gray-600">ยังไม่มีรายการสินค้า</p>
+        )}
       </div>
     </div>
   );
 };
-
-export default ReceiveProductHistoryPage;
+export default ReceiveProductPage;

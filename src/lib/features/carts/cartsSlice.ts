@@ -194,9 +194,15 @@ export const cartsSlice = createSlice({
           isItemInCart.quantity
         );
     },
+    clearCart: (state) => {
+      state.cart = { items: [], totalQuantities: 0 }; // ล้างข้อมูลตะกร้า
+      state.totalPrice = 0; // ล้างราคา
+      state.adjustedTotalPrice = 0; // ล้างราคา adjusted
+    },
   },
 });
 
-export const { addToCart, removeCartItem, remove } = cartsSlice.actions;
+export const { addToCart, removeCartItem, remove, clearCart } =
+  cartsSlice.actions;
 
 export default cartsSlice.reducer;

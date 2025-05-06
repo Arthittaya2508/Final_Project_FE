@@ -128,7 +128,7 @@ const UsersTable: FC = () => {
               <TableCell>{user.email}</TableCell>
               <TableCell>{user.address}</TableCell>
               <TableCell>{user.username}</TableCell>
-              <TableCell>รายละเอียด</TableCell>
+              {/* <TableCell>รายละเอียด</TableCell> */}
             </TableRow>
           ))}
         </TableBody>

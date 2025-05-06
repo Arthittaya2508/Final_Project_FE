@@ -2,6 +2,8 @@
 import { Button } from "../../../components/ui/button";
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import { useDispatch } from "react-redux";
+import { clearCart } from "../../../lib/features/carts/cartsSlice"; // ✅ import action
 
 type Users = {
   user_id: number;
@@ -35,6 +37,7 @@ type OrderModalProps = {
 };
 
 const OrderModal = ({ isOpen, onClose }: OrderModalProps) => {
+  const dispatch = useDispatch(); // ใช้ dispatch เพื่อเรียกใช้ Redux action
   const [user, setUser] = useState<Users | null>(null);
   const [addressOptions, setAddressOptions] = useState<Address[]>([]);
   const [transportOptions, setTransportOptions] = useState<Transport[]>([]);
@@ -42,11 +45,9 @@ const OrderModal = ({ isOpen, onClose }: OrderModalProps) => {
     "existing"
   );
 
-  // New state for new user name input when addressType is "new"
   const [newUserName, setNewUserName] = useState<string>("");
   const [newUserLastName, setNewUserLastName] = useState<string>("");
 
-  // Fetch user data and address data when the modal is opened
   useEffect(() => {
     if (isOpen) {
       const fetchData = async () => {
@@ -56,9 +57,7 @@ const OrderModal = ({ isOpen, onClose }: OrderModalProps) => {
           );
           const data: Users = await res.json();
           setUser(data);
-          fetchAddressData(data.user_id); // Fetch addresses for the user
-
-          // Fetch transport options
+          fetchAddressData(data.user_id);
           fetchTransportData();
         } catch (error) {
           console.error("Failed to fetch user data", error);
@@ -68,7 +67,6 @@ const OrderModal = ({ isOpen, onClose }: OrderModalProps) => {
     }
   }, [isOpen]);
 
-  // Fetch address data for a specific user
   const fetchAddressData = async (userId: number) => {
     try {
       const response = await fetch(
@@ -81,7 +79,6 @@ const OrderModal = ({ isOpen, onClose }: OrderModalProps) => {
     }
   };
 
-  // Fetch transport data
   const fetchTransportData = async () => {
     try {
       const response = await fetch(`http://localhost:5000/api/transports`);
@@ -94,6 +91,11 @@ const OrderModal = ({ isOpen, onClose }: OrderModalProps) => {
 
   const handleAddressChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setAddressType(event.target.value as "existing" | "new");
+  };
+
+  // เมื่อคลิกปุ่มยืนยันการสั่งซื้อ จะทำการลบสินค้าในตะกร้า
+  const handleConfirmOrder = () => {
+    dispatch(clearCart()); // เรียกใช้ action clearCart จาก Redux
   };
 
   if (!isOpen || !user) return null;
@@ -134,7 +136,6 @@ const OrderModal = ({ isOpen, onClose }: OrderModalProps) => {
         {/* Conditional render based on address selection */}
         {addressType === "existing" ? (
           <div className="mb-4">
-            {/* Display User Name as Disabled Input */}
             <div className="mb-4">
               <label className="block text-lg">ผู้ใช้:</label>
               <div className="flex space-x-4">
@@ -165,7 +166,6 @@ const OrderModal = ({ isOpen, onClose }: OrderModalProps) => {
           </div>
         ) : (
           <div className="mb-4">
-            {/* Allow user to input new name if addressType is "new" */}
             <label className="block text-lg">กรุณากรอกชื่อผู้ใช้ใหม่</label>
             <div className="flex space-x-4 mb-4">
               <input
@@ -212,7 +212,7 @@ const OrderModal = ({ isOpen, onClose }: OrderModalProps) => {
           <Button onClick={onClose}>ยกเลิก</Button>
           {/* Use Link to navigate to the payment page */}
           <Link href="/user/cart/payment">
-            <Button>ยืนยันการสั่งซื้อ</Button>
+            <Button onClick={handleConfirmOrder}>ยืนยันการสั่งซื้อ</Button>
           </Link>
         </div>
       </div>

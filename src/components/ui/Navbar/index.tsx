@@ -1,25 +1,87 @@
-import React, { useState } from "react";
-import NotificationModal from "../Noti-modal";
+"use client";
+
+import React, { useState, useEffect } from "react";
+import NotificationModal from "../Notification";
+
+type StockItem = {
+  sku: string;
+  image: string;
+  name: string;
+  color: string;
+  size: string;
+  quantity: number;
+};
 
 const Navbar: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [notifications, setNotifications] = useState<string[]>([]);
 
-  const notifications = [
-    "คำสั่งซื้อ #1234 ได้รับการจัดส่งแล้ว",
-    "คุณมีข้อความใหม่จากลูกค้า",
-    "การชำระเงินสำหรับคำสั่งซื้อ #5678 ได้รับการยืนยันแล้ว",
-  ];
-  
+  const API_URL =
+    process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+
+  useEffect(() => {
+    const fetchNotifications = async () => {
+      try {
+        const [colorRes, sizeRes, productRes] = await Promise.all([
+          fetch(`${API_URL}/colors`),
+          fetch(`${API_URL}/sizes`),
+          fetch(`${API_URL}/products`),
+        ]);
+
+        const colors = await colorRes.json();
+        const sizes = await sizeRes.json();
+        const products = await productRes.json();
+
+        const colorMap = new Map(
+          colors.map((c: any) => [c.color_id, c.color_name])
+        );
+        const sizeMap = new Map(
+          sizes.map((s: any) => [s.size_id, s.size_name])
+        );
+
+        const lowStockItems: string[] = [];
+
+        for (const product of products) {
+          const detailRes = await fetch(
+            `${API_URL}/product_details?pro_id=${product.pro_id}`
+          );
+          const details = await detailRes.json();
+
+          for (const detail of details) {
+            const itemRes = await fetch(
+              `${API_URL}/product_detail_items?pro_detail_id=${detail.pro_detail_id}`
+            );
+            const items = await itemRes.json();
+
+            for (const item of items) {
+              if (item.stock_quantity <= 10) {
+                const color =
+                  colorMap.get(detail.color_id) || `Color ${detail.color_id}`;
+                const size =
+                  sizeMap.get(item.size_id) || `Size ${item.size_id}`;
+                lowStockItems.push(
+                  `${product.pro_name} - ${color} / ${size} เหลือ ${item.stock_quantity} ชิ้น`
+                );
+              }
+            }
+          }
+        }
+
+        setNotifications(lowStockItems);
+      } catch (error) {
+        console.error("Failed to fetch notifications", error);
+      }
+    };
+
+    fetchNotifications();
+  }, [API_URL]);
 
   return (
     <nav className="bg-gray-800 p-4">
       <div className="container mx-auto flex justify-between items-center">
-        {/* ชื่อหน้า */}
         <div className="text-white text-xl ml-10 font-bold">
           เฟื่องฟู สปอร์ต
         </div>
-
-        {/* ไอคอนแจ้งเตือน */}
         <div className="relative">
           <svg
             onClick={() => setIsModalOpen(true)}
@@ -42,12 +104,12 @@ const Navbar: React.FC = () => {
               d="M13 21h-2v-2h2v2z"
             />
           </svg>
-          {/* จุดแจ้งเตือน */}
-          <span className="absolute top-0 right-8 block h-2 w-2 transform translate-x-1/2 -translate-y-1/2 bg-red-500 rounded-full"></span>
+          {notifications.length > 0 && (
+            <span className="absolute top-0 right-8 block h-2 w-2 transform translate-x-1/2 -translate-y-1/2 bg-red-500 rounded-full"></span>
+          )}
         </div>
       </div>
 
-      {/* Notification Modal */}
       <NotificationModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}

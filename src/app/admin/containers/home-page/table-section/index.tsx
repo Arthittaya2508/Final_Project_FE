@@ -63,12 +63,13 @@ const TableSection: FC = () => {
   const [statusOrders, setStatusOrders] = useState<StatusOrders[]>([]);
   const [transports, setTransports] = useState<Transports[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [orderDetail, setOrderDetail] = useState<any[]>([]);
-  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [filteredOrders, setFilteredOrders] = useState<Order[]>([]);
   const [selectedStatus, setSelectedStatus] = useState<number | null>(1);
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
+  const [selectedMonth, setSelectedMonth] = useState<number | null>(null);
+  const [selectedYear, setSelectedYear] = useState<number | null>(null);
+  const [page, setPage] = useState(1);
+  const [rowsPerPage] = useState(10);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -112,7 +113,6 @@ const TableSection: FC = () => {
             addressData.map(({ userId, address }) => [userId, address])
           )
         );
-
         setIsLoading(false);
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -123,12 +123,26 @@ const TableSection: FC = () => {
   }, []);
 
   useEffect(() => {
-    setFilteredOrders(
-      selectedStatus !== null
-        ? orders.filter((order) => order.status_id === selectedStatus)
-        : orders
-    );
-  }, [selectedStatus, orders]);
+    let ordersToFilter = orders;
+
+    if (selectedStatus !== null) {
+      ordersToFilter = ordersToFilter.filter(
+        (order) => order.status_id === selectedStatus
+      );
+    }
+
+    if (selectedMonth !== null && selectedYear !== null) {
+      ordersToFilter = ordersToFilter.filter((order) => {
+        const date = new Date(order.order_date);
+        return (
+          date.getMonth() + 1 === selectedMonth &&
+          date.getFullYear() === selectedYear
+        );
+      });
+    }
+
+    setFilteredOrders(ordersToFilter);
+  }, [selectedStatus, selectedMonth, selectedYear, orders]);
 
   const getUserFullName = (userId: number) => {
     const user = users.find((u) => u.user_id === userId);
@@ -146,13 +160,6 @@ const TableSection: FC = () => {
       : "-";
   };
 
-  const handleViewOrderDetails = async (orderId: number) => {
-    const order = orders.find((o) => o.order_id === orderId);
-    setSelectedOrder(order || null);
-    setOrderDetail(order ? await fetchOrderDetail(orderId) : []);
-    setIsModalOpen(true);
-  };
-
   const fetchAddress = async (userId: number) => {
     try {
       const res = await fetch(
@@ -166,26 +173,11 @@ const TableSection: FC = () => {
     }
   };
 
-  const fetchOrderDetail = async (orderId: number) => {
-    try {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/order_details?order_id=${orderId}`
-      );
-      const data = await res.json();
-      return data;
-    } catch (error) {
-      console.error("Error fetching order details:", error);
-      return [];
-    }
-  };
-
   const handleStatusChange = (statusId: number) => {
     setSelectedStatus(statusId);
   };
 
   const isEmpty = filteredOrders.length === 0;
-  const [rowsPerPage] = useState(10);
-  const [page, setPage] = useState(1);
   const pages = Math.ceil(filteredOrders.length / rowsPerPage);
 
   const sortedFilteredOrders = useMemo(() => {
@@ -201,9 +193,19 @@ const TableSection: FC = () => {
     return sortedFilteredOrders.slice(start, start + rowsPerPage);
   }, [page, rowsPerPage, sortedFilteredOrders]);
 
+  const availableYears = useMemo(() => {
+    const years = new Set<number>();
+    orders.forEach((order) => {
+      const year = new Date(order.order_date).getFullYear();
+      years.add(year);
+    });
+    return Array.from(years).sort((a, b) => b - a);
+  }, [orders]);
+
   return (
-    <div className=" mb-6">
-      <div className="flex items-center min-w-[800px]">
+    <div className="mb-6">
+      {/* Filter by status */}
+      <div className="flex items-center min-w-[800px] overflow-x-auto pb-4 mt-4">
         {orderStatuses.map((status, index) => (
           <React.Fragment key={status.label}>
             <div
@@ -216,9 +218,8 @@ const TableSection: FC = () => {
                 } w-10 h-10 lg:w-12 lg:h-12 rounded-full flex items-center justify-center text-white font-bold text-sm lg:text-base cursor-pointer ${
                   selectedStatus === status.status_id
                     ? "ring-4 ring-indigo-500"
-                    : "" // เพิ่มวงกลมรอบสถานะที่เลือก
+                    : ""
                 }`}
-                onClick={() => handleStatusChange(status.status_id)} // เพิ่มการคลิกเพื่อเลือกสถานะ
               >
                 {orders.filter((order) => order.status_id === status.status_id)
                   .length || 0}
@@ -234,8 +235,8 @@ const TableSection: FC = () => {
         ))}
       </div>
 
-      {/* 🔽 ตัวเลือกเรียงวันที่ */}
-      <div className="flex justify-end p-2 ">
+      {/* Sorting and filter by month/year */}
+      <div className="flex justify-end p-2 gap-4 flex-wrap">
         <div className="flex items-center space-x-2 rounded-lg px-3 py-2 shadow-sm">
           <label className="text-sm font-medium text-gray-700">
             เรียงตามวันที่:
@@ -243,14 +244,47 @@ const TableSection: FC = () => {
           <select
             value={sortOrder}
             onChange={(e) => setSortOrder(e.target.value as "asc" | "desc")}
-            className="text-sm border border-gray-300 rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+            className="text-sm border border-gray-300 rounded-md px-2 py-1"
           >
             <option value="desc">ใหม่ → เก่า</option>
             <option value="asc">เก่า → ใหม่</option>
           </select>
         </div>
+
+        <div className="flex items-center space-x-2 rounded-lg px-3 py-2 shadow-sm">
+          <label className="text-sm font-medium text-gray-700">เดือน:</label>
+          <select
+            value={selectedMonth || ""}
+            onChange={(e) => setSelectedMonth(Number(e.target.value) || null)}
+            className="text-sm border border-gray-300 rounded-md px-2 py-1"
+          >
+            <option value="">ทั้งหมด</option>
+            {[...Array(12)].map((_, i) => (
+              <option key={i + 1} value={i + 1}>
+                {new Date(0, i).toLocaleString("th-TH", { month: "long" })}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* <div className="flex items-center space-x-2 rounded-lg px-3 py-2 shadow-sm">
+          <label className="text-sm font-medium text-gray-700">ปี:</label>
+          <select
+            value={selectedYear || ""}
+            onChange={(e) => setSelectedYear(Number(e.target.value) || null)}
+            className="text-sm border border-gray-300 rounded-md px-2 py-1"
+          >
+            <option value="">ทั้งหมด</option>
+            {availableYears.map((year) => (
+              <option key={year} value={year}>
+                {year + 543}
+              </option>
+            ))}
+          </select>
+        </div> */}
       </div>
-      {/* ตาราง */}
+
+      {/* Table */}
       <Table
         aria-label="table"
         color="danger"

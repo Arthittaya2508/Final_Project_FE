@@ -264,7 +264,7 @@ const SalesReportPage = () => {
                   <td className="p-2">
                     {sale.date}/{selectedYear}
                   </td>
-                  <td className="p-2">ORD{index + 1}</td>
+                  <td className="p-2">ORD0000{index + 1}</td>
                   <td className="p-2 text-right">{index + 1}</td>
                   <td className="p-2 text-right">{sale.sales}</td>
                   <td className="p-2 text-right">

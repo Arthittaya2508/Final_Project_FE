@@ -116,7 +116,7 @@ export const user = [
   { name: "อีเมล", uid: "email" },
   { name: "ที่อยู่", uid: "address" },
   { name: "Username", uid: "username" },
-  { name: "", uid: "detail" },
+  // { name: "", uid: "detail" },
 ];
 export const employee = [
   { name: "ลำดับที่", uid: "emp_id", sortable: true },
@@ -127,7 +127,7 @@ export const employee = [
   { name: "อีเมล", uid: "email" },
   { name: "ตำแหน่ง", uid: "position" },
   { name: "Username", uid: "username" },
-  { name: "", uid: "detail" },
+  // { name: "", uid: "detail" },
 ];
 
 export const products = [

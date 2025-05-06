@@ -27,14 +27,18 @@ type Size = {
   size_id: number;
   size_name: string;
 };
+
 type orderData = {
-  company_id: number;
-  brand_id: number;
-  product_id: number;
-  color_id: number;
-  size_id: number;
+  company_id: number | null;
+  brand_id: number | null;
+  product_id: number | null;
+  color_id: number | null;
+  size_id: number | null;
   quantity: number;
+  price: number;
+  total: number;
 };
+
 const ReceiveProductPage = () => {
   const [companies, setCompanies] = useState<Company[]>([]);
   const [brands, setBrands] = useState<Brand[]>([]);
@@ -49,8 +53,14 @@ const ReceiveProductPage = () => {
   const [selectedColor, setSelectedColor] = useState<number | null>(null);
   const [selectedSize, setSelectedSize] = useState<number | null>(null);
   const [quantity, setQuantity] = useState<number>(1);
+  const [price, setPrice] = useState<number>(0);
+  const [total, setTotal] = useState<number>(0);
 
-  // โหลดรายชื่อบริษัท
+  // คำนวณราคารวมเมื่อ quantity หรือ price เปลี่ยน
+  useEffect(() => {
+    setTotal(quantity * price);
+  }, [quantity, price]);
+
   useEffect(() => {
     const fetchCompanies = async () => {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/company`);
@@ -60,29 +70,26 @@ const ReceiveProductPage = () => {
     fetchCompanies();
   }, []);
 
-  // โหลดแบรนด์ทั้งหมด
   useEffect(() => {
     const fetchBrands = async () => {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/brands`);
       const data = await res.json();
-      setBrands(data); // เก็บข้อมูลแบรนด์ทั้งหมด
+      setBrands(data);
     };
     fetchBrands();
   }, []);
 
-  // กรองแบรนด์ที่ตรงกับบริษัทที่เลือก
   useEffect(() => {
     if (selectedCompany) {
       const filtered = brands.filter(
         (brand) => brand.company_id === selectedCompany
       );
-      setFilteredBrands(filtered); // กรองแบรนด์ที่ตรงกับ company_id
+      setFilteredBrands(filtered);
     } else {
-      setFilteredBrands([]); // ถ้าไม่ได้เลือกบริษัท ให้รีเซ็ตแบรนด์
+      setFilteredBrands([]);
     }
   }, [selectedCompany, brands]);
 
-  // โหลดสินค้าเมื่อเลือกแบรนด์
   useEffect(() => {
     const fetchProducts = async () => {
       if (selectedBrand) {
@@ -90,13 +97,12 @@ const ReceiveProductPage = () => {
           `${process.env.NEXT_PUBLIC_API_URL}/products?brand_id=${selectedBrand}`
         );
         const data = await res.json();
-        setProducts(data); // เก็บข้อมูลสินค้าที่ตรงกับแบรนด์ที่เลือก
+        setProducts(data);
       }
     };
     fetchProducts();
   }, [selectedBrand]);
 
-  // โหลดสีและขนาดเมื่อเลือกสินค้า
   useEffect(() => {
     const fetchProductDetails = async () => {
       if (selectedProduct) {
@@ -119,7 +125,6 @@ const ReceiveProductPage = () => {
     fetchProductDetails();
   }, [selectedProduct]);
 
-  // รีเซ็ต dropdown เมื่อเปลี่ยน selections
   const handleCompanyChange = (value: number) => {
     setSelectedCompany(value);
     setSelectedBrand(null);
@@ -152,13 +157,15 @@ const ReceiveProductPage = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const orderData = {
+    const orderData: orderData = {
       company_id: selectedCompany,
       brand_id: selectedBrand,
       product_id: selectedProduct,
       color_id: selectedColor,
       size_id: selectedSize,
       quantity,
+      price,
+      total,
     };
 
     const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/order_import`, {
@@ -306,10 +313,43 @@ const ReceiveProductPage = () => {
           <input
             type="number"
             id="quantity"
-            min="1"
+            min="0"
             value={quantity}
             onChange={(e) => setQuantity(Number(e.target.value))}
             className="mt-1 block w-full px-4 py-2 border rounded-md"
+          />
+        </div>
+
+        <div>
+          <label
+            htmlFor="price"
+            className="block text-sm font-medium text-gray-700"
+          >
+            ราคาต่อหน่วย (บาท)
+          </label>
+          <input
+            type="number"
+            id="price"
+            min="0"
+            value={price}
+            onChange={(e) => setPrice(Number(e.target.value))}
+            className="mt-1 block w-full px-4 py-2 border rounded-md"
+          />
+        </div>
+
+        <div>
+          <label
+            htmlFor="total"
+            className="block text-sm font-medium text-gray-700"
+          >
+            ราคารวม (บาท)
+          </label>
+          <input
+            type="number"
+            id="total"
+            value={total}
+            readOnly
+            className="mt-1 block w-full px-4 py-2 border rounded-md bg-gray-100"
           />
         </div>
 

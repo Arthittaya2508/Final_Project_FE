@@ -240,7 +240,15 @@ const OrderDetailPage = () => {
     const currentIndex = orderStatuses.findIndex(
       (s) => s.status_id === order.status_id
     );
-    const nextStatus = orderStatuses[currentIndex + 1];
+
+    let nextStatus;
+
+    // กรณีจัดส่งแล้ว ให้แสดงปุ่ม "รับสินค้าเรียบร้อย"
+    if (order.status_id === 4) {
+      nextStatus = orderStatuses.find((s) => s.status_id === 5);
+    } else {
+      nextStatus = orderStatuses[currentIndex + 1];
+    }
 
     if (!nextStatus) {
       alert("ไม่สามารถอัปเดตสถานะถัดไปได้ เพราะเป็นสถานะสุดท้าย");
@@ -252,15 +260,10 @@ const OrderDetailPage = () => {
       return;
     }
 
-    // ✅ อัปเดตสถานะใน state ทันที
-    setOrder((prev) =>
-      prev ? { ...prev, status_id: nextStatus.status_id } : prev
-    );
     setIsUpdating(true);
-
     try {
       const response = await fetch(
-        `http://localhost:5000/api/orders/${order_id}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/orders/${order.order_id}`,
         {
           method: "PUT",
           headers: {
@@ -270,19 +273,23 @@ const OrderDetailPage = () => {
         }
       );
 
-      if (!response.ok) {
+      if (response.ok) {
+        const updatedOrder = await response.json();
+        setOrder(updatedOrder);
+        alert("อัปเดตสถานะสำเร็จ");
+
+        // รีเฟรชข้อมูลใหม่หลังจากอัปเดตสถานะ
+        const baseUrl = process.env.NEXT_PUBLIC_API_URL;
+        const orderRes = await fetch(
+          `${baseUrl}/orders/${order.order_id}`
+        ).then((res) => res.json());
+        setOrder(orderRes);
+      } else {
         throw new Error("เกิดข้อผิดพลาดในการอัปเดตสถานะ");
       }
-
-      alert("อัปเดตสถานะสำเร็จ");
     } catch (err) {
       console.error("❌ Error updating status:", err);
       alert("เกิดข้อผิดพลาดในการเปลี่ยนสถานะ");
-
-      // ❗ ย้อนกลับสถานะเดิมในกรณีอัปเดตไม่สำเร็จ
-      setOrder((prev) =>
-        prev ? { ...prev, status_id: order.status_id } : prev
-      );
     } finally {
       setIsUpdating(false);
     }
@@ -296,6 +303,7 @@ const OrderDetailPage = () => {
     (sum, detail) => sum + detail.quantity,
     0
   );
+
   return (
     <div className="max-w-6xl mx-auto p-6 bg-white rounded shadow">
       <button
@@ -355,124 +363,88 @@ const OrderDetailPage = () => {
               </p>
             </div>
 
-            {/* ขวา: รูปหลักฐานการชำระเงิน */}
+            {/* ขวา: รูปหลักฐานการชำระเงิน
             <div className="mr-48">
               <div className="flex flex-row ">
                 <p className="mb-32 mr-2 font-bold ">หลักฐานการชำระเงิน:</p>
                 {order.payment_image ? (
                   <img
-                    src={
-                      order.payment_image.startsWith("data:image/")
-                        ? order.payment_image
-                        : `/images/${order.payment_image}`
-                    }
+                    src={order.payment_image}
                     alt="หลักฐานการชำระเงิน"
-                    className="w-20 h-auto rounded border shadow cursor-pointer transition hover:scale-105"
-                    onClick={() =>
-                      setSelectedImage(order.payment_image || null)
-                    }
+                    className="w-32 h-32 object-contain rounded"
                   />
                 ) : (
-                  <span className="text-gray-400">ไม่มีหลักฐานการชำระเงิน</span>
+                  <span>ไม่มีหลักฐานการชำระเงิน</span>
                 )}
               </div>
-            </div>
+            </div> */}
           </div>
-
-          {/* Modal แสดงรูปภาพแบบเต็ม */}
-          {selectedImage && (
-            <div
-              className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50"
-              onClick={() => setSelectedImage(null)}
+          <div className="mt-6 overflow-x-auto">
+            <table className="min-w-full border">
+              <thead className="bg-gray-100">
+                <tr>
+                  <th className="p-2 text-left">ลำดับ</th>
+                  <th className="p-2 text-left">รูปสินค้า</th>
+                  <th className="p-2 text-left">ชื่อสินค้า</th>
+                  <th className="p-2 text-left">สี</th>
+                  <th className="p-2 text-left">ขนาด</th>
+                  <th className="p-2 text-left">จำนวน</th>
+                  {/* <th className="p-2 text-left">จำนวนรวม</th> */}
+                  <th className="p-2 text-left">ราคาสินค้า</th>
+                  <th className="p-2 text-left">ราคารวม</th>
+                </tr>
+              </thead>
+              <tbody>
+                {orderDetails.map((detail) => {
+                  const detailData = getProductDetail(detail.pro_detail_id);
+                  return (
+                    <tr key={detail.order_detail_id} className="border-t">
+                      <td className="p-2">{detail.order_detail_id}</td>
+                      <td className="p-2">
+                        {renderProductImage(detailData?.pro_image)}
+                      </td>
+                      <td className="p-2">{getProductName(detail.pro_id)}</td>
+                      <td className="p-2">
+                        {getColorName(detailData?.color_id || 0)}
+                      </td>
+                      <td className="p-2">{getSizeName(detail.item_id)}</td>
+                      <td className="p-2">{detail.quantity}</td>
+                      {/* <td className="p-2">{detail.total_quantity}</td> */}
+                      <td className="p-2">{detail.selling_price} บาท</td>
+                      <td className="p-2">{detail.total_price} บาท</td>
+                    </tr>
+                  );
+                })}
+                <tr className="border-t">
+                  <td colSpan={7} className=" text-right font-bold">
+                    จำนวนสินค้าทั้งหมด:
+                  </td>
+                  <td className=" font-bold text-right text-blue-600">
+                    {totalQuantity} ชิ้น
+                  </td>
+                </tr>
+                <tr className="">
+                  <td colSpan={7} className=" text-right font-bold">
+                    ราคารวมทั้งหมด:
+                  </td>
+                  <td className=" font-bold text-right text-green-600">
+                    {totalAmount.toLocaleString()} บาท
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          {/* ตำแหน่งปุ่มอัปเดตสถานะ */}
+          {order.status_id === 4 && (
+            <button
+              onClick={handleUpdateStatus}
+              disabled={isUpdating}
+              className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:bg-gray-400 "
             >
-              <div className="bg-white p-4 rounded shadow-lg max-w-full max-h-full">
-                <img
-                  src={
-                    selectedImage.startsWith("data:image/")
-                      ? selectedImage
-                      : `/images/${selectedImage}`
-                  }
-                  alt="ภาพขยาย"
-                  className="max-w-[90vw] max-h-[80vh] rounded"
-                />
-              </div>
-            </div>
+              {isUpdating ? "กำลังอัปเดต..." : "รับสินค้าเรียบร้อย"}
+            </button>
           )}
         </>
-      )}
-
-      <div className="mt-6 overflow-x-auto">
-        <table className="min-w-full border">
-          <thead className="bg-gray-100">
-            <tr>
-              <th className="p-2 text-left">ลำดับ</th>
-              <th className="p-2 text-left">รูปสินค้า</th>
-              <th className="p-2 text-left">ชื่อสินค้า</th>
-              <th className="p-2 text-left">สี</th>
-              <th className="p-2 text-left">ขนาด</th>
-              <th className="p-2 text-left">จำนวน</th>
-              {/* <th className="p-2 text-left">จำนวนรวม</th> */}
-              <th className="p-2 text-left">ราคาสินค้า</th>
-              <th className="p-2 text-left">ราคารวม</th>
-            </tr>
-          </thead>
-          <tbody>
-            {orderDetails.map((detail) => {
-              const detailData = getProductDetail(detail.pro_detail_id);
-              return (
-                <tr key={detail.order_detail_id} className="border-t">
-                  <td className="p-2">{detail.order_detail_id}</td>
-                  <td className="p-2">
-                    {renderProductImage(detailData?.pro_image)}
-                  </td>
-                  <td className="p-2">{getProductName(detail.pro_id)}</td>
-                  <td className="p-2">
-                    {getColorName(detailData?.color_id || 0)}
-                  </td>
-                  <td className="p-2">{getSizeName(detail.item_id)}</td>
-                  <td className="p-2">{detail.quantity}</td>
-                  {/* <td className="p-2">{detail.total_quantity}</td> */}
-                  <td className="p-2">{detail.selling_price} บาท</td>
-                  <td className="p-2">{detail.total_price} บาท</td>
-                </tr>
-              );
-            })}
-            <tr className="border-t">
-              <td colSpan={7} className=" text-right font-bold">
-                จำนวนสินค้าทั้งหมด:
-              </td>
-              <td className=" font-bold text-right text-blue-600">
-                {totalQuantity} ชิ้น
-              </td>
-            </tr>
-            <tr className="">
-              <td colSpan={7} className=" text-right font-bold">
-                ราคารวมทั้งหมด:
-              </td>
-              <td className=" font-bold text-right text-green-600">
-                {totalAmount.toLocaleString()} บาท
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      {order && order.status_id < 4 && order.status_id !== 6 && (
-        <div className="mt-6 flex justify-end">
-          <button
-            onClick={handleUpdateStatus}
-            disabled={isUpdating}
-            className={`px-6 py-2 text-white rounded hover:opacity-90 disabled:opacity-50 ${
-              orderStatuses.find((s) => s.status_id === order.status_id)
-                ?.bgColor || "bg-gray-400"
-            }`}
-          >
-            {isUpdating
-              ? "กำลังอัปเดต..."
-              : orderStatuses.find((s) => s.status_id === order.status_id)
-                  ?.buttonText || "อัปเดตสถานะ"}
-          </button>
-        </div>
       )}
     </div>
   );

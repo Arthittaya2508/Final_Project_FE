@@ -135,7 +135,7 @@ const EmployeesTable: FC = () => {
               <TableCell>{employee.email}</TableCell>
               <TableCell>{employee.position}</TableCell>
               <TableCell>{employee.username}</TableCell>
-              <TableCell>รายละเอียด</TableCell>
+              {/* <TableCell>รายละเอียด</TableCell> */}
             </TableRow>
           ))}
         </TableBody>

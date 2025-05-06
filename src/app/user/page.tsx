@@ -157,8 +157,8 @@ export const relatedProductData: Product[] = [
   {
     id: 10,
     title: "เสื้อกีฬาแขนสั้น",
-    srcUrl: "/images/pic16.png",
-    gallery: ["/images/pic16.png"],
+    srcUrl: "/images/GRANDSPORT-RedfootballJersey0114.jpg",
+    gallery: ["/images/GRANDSPORT-RedfootballJersey0114.jpg"],
     price: 249, // ราคาเป็นเงินบาทโดยตรง
     discount: {
       amount: 0,
@@ -179,6 +179,19 @@ export const relatedProductData: Product[] = [
     },
     rating: 4.6,
     description: "รองเท้ากีฬาสไตล์ใหม่สำหรับการวิ่งและการฝึกซ้อม",
+  },
+  {
+    id: 12,
+    title: "ลูกแชร์บอลยาง รุ่น CB5R",
+    srcUrl: "/images/CB5R_M1.jpg",
+    gallery: ["/images/CB5R_M1.jpg"],
+    price: 319, // ราคาเป็นเงินบาทโดยตรง
+    discount: {
+      amount: 0,
+      percentage: 0,
+    },
+    rating: 4.4,
+    description: "ลูกแชร์บอลยาง Molten CB5R เบอร์ 5 สีส้ม ผิวสัมผัสง่าย",
   },
 ];
 

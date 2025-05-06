@@ -12,16 +12,20 @@ import { IoMdCheckmark } from "react-icons/io";
 
 const colorsData: Color[] = [
   {
-    name: "Brown",
-    code: "bg-[#4F4631]",
+    name: "Navy",
+    code: "bg-[#001f3f]",
+  },
+  {
+    name: "Red",
+    code: "bg-red-800",
+  },
+  {
+    name: "White",
+    code: "bg-white border border-gray-300", // เพิ่ม border เพื่อให้มองเห็นสีขาวบนพื้นหลังขาว
   },
   {
     name: "Green",
     code: "bg-[#314F4A]",
-  },
-  {
-    name: "Blue",
-    code: "bg-[#31344F]",
   },
 ];
 
@@ -33,9 +37,7 @@ const ColorSelection = () => {
 
   return (
     <div className="flex flex-col">
-      <span className="text-sm sm:text-base text-black/60 mb-4">
-        เลือกสี
-      </span>
+      <span className="text-sm sm:text-base text-black/60 mb-4">เลือกสี</span>
       <div className="flex items-center flex-wrap space-x-3 sm:space-x-4">
         {colorsData.map((color, index) => (
           <button

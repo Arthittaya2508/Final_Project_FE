@@ -63,6 +63,11 @@ const menuItems = [
     href: "/admin/company",
   },
   {
+    label: "ข้อมูลสต๊อกสินค้า",
+    icon: <TbBriefcase />,
+    href: "/admin/stock",
+  },
+  {
     label: "สั่งซื้อ/รับเข้า",
     icon: <TbBriefcase />,
     href: "#",

@@ -3,12 +3,10 @@ import Swal from "sweetalert2";
 
 export type ItemProductDetails = {
   item_id: number;
-  color_id: number;
   size_id: number;
   stock_quantity: number;
   sale_price: number;
   cost_price: number;
-  detail_id: number;
 };
 
 interface AddItemProductProps {
@@ -29,12 +27,10 @@ const AddItemProduct: React.FC<AddItemProductProps> = ({
   >([
     {
       item_id: 0,
-      color_id: 0,
       size_id: 0,
       stock_quantity: 0,
       sale_price: 0,
       cost_price: 0,
-      detail_id: 0,
     },
   ]);
 
@@ -87,23 +83,21 @@ const AddItemProduct: React.FC<AddItemProductProps> = ({
       ...itemProductDetails,
       {
         item_id: 0,
-        color_id: 0,
         size_id: 0,
         stock_quantity: 0,
         sale_price: 0,
         cost_price: 0,
-        detail_id: 0,
       },
     ]);
   };
-
   const handleSubmit = async () => {
     try {
       setLoading(true);
       const dataToSend = itemProductDetails.map((item) => ({
         ...item,
-        pro_detail_id,
+        pro_detail_id, // ✅ ต้องใส่ตรงนี้
       }));
+
       const apiBase =
         process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
       const response = await fetch(`${apiBase}/product_detail_items`, {

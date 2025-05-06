@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import axios from "axios";
+import Link from "next/link";
 
 export type Order = {
   order_id: number;
@@ -9,11 +10,6 @@ export type Order = {
   total_amount: number;
   shipping_date: string;
   status_id: number;
-};
-
-export type StatusOrders = {
-  status_id: number;
-  status_name: string;
 };
 
 type Users = {
@@ -37,29 +33,60 @@ export type Address = {
   zipcode: string;
 };
 
+const orderStatuses = [
+  {
+    label: "ที่ยังไม่ได้รับ",
+    status_id: 1,
+    bgColor: "bg-yellow-400",
+    buttonText: "รับออเดอร์",
+  },
+  {
+    label: "ที่กำลังจัดเตรียม",
+    status_id: 2,
+    bgColor: "bg-orange-400",
+    buttonText: "จัดเตรียมเสร็จแล้ว",
+  },
+  {
+    label: "รอขนส่งมารับ",
+    status_id: 3,
+    bgColor: "bg-blue-400",
+    buttonText: "ขนส่งมารับแล้ว",
+  },
+  {
+    label: "ที่จัดส่งแล้ว",
+    status_id: 4,
+    bgColor: "bg-indigo-400",
+    buttonText: "จัดส่งแล้ว",
+  },
+  {
+    label: "ที่ส่งเรียบร้อย",
+    status_id: 5,
+    bgColor: "bg-green-400",
+    buttonText: "สิ้นสุดคำสั่งซื้อ",
+  },
+  { label: "ที่ยกเลิก", status_id: 6, bgColor: "bg-red-400", buttonText: "" },
+];
+
 const OrderHistory = () => {
   const user_id = 3;
   const [orders, setOrders] = useState<Order[]>([]);
   const [user, setUser] = useState<Users | null>(null);
   const [addressOptions, setAddressOptions] = useState<Address[]>([]);
-  const [statusOrders, setStatusOrders] = useState<StatusOrders[]>([]);
-  const [selectedStatus, setSelectedStatus] = useState<number | null>(null);
   const [filteredOrders, setFilteredOrders] = useState<Order[]>([]);
+  const [selectedStatus, setSelectedStatus] = useState<number | null>(null);
 
   useEffect(() => {
     const fetchOrders = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:5000/api/orders?user_id=${user_id}`
+          `http://localhost:5000/api/orderUser?user_id=${user_id}`
         );
-        if (Array.isArray(response.data.orders)) {
-          setOrders(response.data.orders);
-          setFilteredOrders(response.data.orders);
-        } else {
-          setOrders([]);
-          setFilteredOrders([]);
-        }
-      } catch (error) {
+        const fetchedOrders = Array.isArray(response.data.orders)
+          ? response.data.orders
+          : [];
+        setOrders(fetchedOrders);
+        setFilteredOrders(fetchedOrders);
+      } catch {
         setOrders([]);
         setFilteredOrders([]);
       }
@@ -71,27 +98,14 @@ const OrderHistory = () => {
     const fetchUser = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:5000/api/users/user?user_id=3`
+          `http://localhost:5000/api/users/user?user_id=${user_id}`
         );
         setUser(response.data);
       } catch (error) {
         console.error("Failed to fetch user data", error);
       }
     };
-
-    const fetchStatusOrders = async () => {
-      try {
-        const response = await axios.get(
-          `${process.env.NEXT_PUBLIC_API_URL}/status_orders`
-        );
-        setStatusOrders(response.data);
-      } catch (error) {
-        console.error("Failed to fetch status orders:", error);
-      }
-    };
-
     fetchUser();
-    fetchStatusOrders();
   }, []);
 
   useEffect(() => {
@@ -109,22 +123,49 @@ const OrderHistory = () => {
   }, []);
 
   useEffect(() => {
-    if (selectedStatus !== null) {
-      setFilteredOrders(
-        orders.filter((order) => order.status_id === selectedStatus)
+    const sorted = [...orders].sort((a, b) => {
+      const aIndex = orderStatuses.findIndex(
+        (s) => s.status_id === a.status_id
       );
-    } else {
-      setFilteredOrders(orders);
-    }
+      const bIndex = orderStatuses.findIndex(
+        (s) => s.status_id === b.status_id
+      );
+      return aIndex - bIndex;
+    });
+
+    setFilteredOrders(
+      selectedStatus !== null
+        ? sorted.filter((order) => order.status_id === selectedStatus)
+        : sorted
+    );
   }, [selectedStatus, orders]);
 
   return (
-    <div className="bg-gray-100 min-h-screen  items-center justify-center p-20">
+    <div className="bg-gray-100 min-h-screen p-20">
       <h1 className="text-3xl font-semibold mb-6 text-gray-800">
         ประวัติคำสั่งซื้อของฉัน
       </h1>
 
-      <table className="min-w-full table-auto bg-gray-50 rounded-lg overflow-hidden">
+      {/* Dropdown filter */}
+      <div className="mb-4">
+        <label className="mr-2 font-medium text-gray-700">เลือกสถานะ:</label>
+        <select
+          value={selectedStatus ?? ""}
+          onChange={(e) =>
+            setSelectedStatus(e.target.value ? parseInt(e.target.value) : null)
+          }
+          className="border border-gray-300 rounded px-4 py-2"
+        >
+          <option value="">ทั้งหมด</option>
+          {orderStatuses.map((status) => (
+            <option key={status.status_id} value={status.status_id}>
+              {status.label}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <table className="min-w-full table-auto bg-gray-50 rounded-lg overflow-hidden shadow">
         <thead className="bg-blue-500 text-white">
           <tr>
             <th className="px-6 py-3 text-left">เลขที่ใบสั่งซื้อ</th>
@@ -142,7 +183,7 @@ const OrderHistory = () => {
               const userAddress = addressOptions.find(
                 (addr) => addr.user_id === order.user_id
               );
-              const orderStatus = statusOrders.find(
+              const statusObj = orderStatuses.find(
                 (status) => status.status_id === order.status_id
               );
 
@@ -167,10 +208,24 @@ const OrderHistory = () => {
                     {order.total_amount.toLocaleString()} บาท
                   </td>
                   <td className="px-6 py-4">
-                    {orderStatus ? orderStatus.status_name : "ไม่พบสถานะ"}
+                    {statusObj ? (
+                      <span
+                        className={`text-white px-3 py-1 text-sm rounded-full ${statusObj.bgColor}`}
+                      >
+                        {statusObj.label}
+                      </span>
+                    ) : (
+                      "ไม่พบสถานะ"
+                    )}
                   </td>
-                  <td className="px-6 py-4 text-blue-500 cursor-pointer">
-                    <u>รายละเอียด</u>
+                  <td className="px-6 py-4">
+                    <Link
+                      href={`/user/history/order_details?order_id=${order.order_id}`}
+                    >
+                      <button className="text-blue-600 underline">
+                        ดูรายละเอียด
+                      </button>
+                    </Link>
                   </td>
                 </tr>
               );
