@@ -38,7 +38,6 @@ const ProductDetailPage = () => {
   const searchParams = useSearchParams();
   const pro_id = searchParams.get("pro_id");
   const router = useRouter(); // Initialize router
-
   const [productDetail, setProductDetail] = useState<ProductDetail[]>([]);
   const [colors, setColors] = useState<Colors[]>([]);
   const [products, setProducts] = useState<Products[]>([]);
