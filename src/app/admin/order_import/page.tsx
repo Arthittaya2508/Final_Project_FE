@@ -250,7 +250,7 @@ const ReceiveProductPage = () => {
             </div>
             <div className="w-1/2">
               <label className="block text-sm font-medium mb-1">
-                ราคาต่อหน่วย
+                ราคาต่อชิ้น
               </label>
               <input
                 type="number"
@@ -286,7 +286,7 @@ const ReceiveProductPage = () => {
                     <th className="border px-2 py-1">สี</th>
                     <th className="border px-2 py-1">ขนาด</th>
                     <th className="border px-2 py-1">จำนวน</th>
-                    <th className="border px-2 py-1">ราคาต่อหน่วย</th>
+                    <th className="border px-2 py-1">ราคาต่อชิ้น</th>
                     <th className="border px-2 py-1">รวม</th>
                   </tr>
                 </thead>

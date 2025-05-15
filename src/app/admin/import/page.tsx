@@ -24,19 +24,27 @@ type OrderImportDetail = {
   size_id: number;
   quantity: number;
   cost_price: string;
+  order_import_detail_id: number;
+  order_import_id: number;
+};
+
+type ProductReceive = {
+  order_import_id: number;
+  order_import_detail_id: number;
+  actual_quantity: number;
 };
 
 const Modal = ({
   order,
   closeModal,
+  refreshData,
 }: {
   order: OrderImport;
   closeModal: () => void;
+  refreshData: () => Promise<void>;
 }) => {
   const [details, setDetails] = useState<OrderImportDetail[]>([]);
-  const [editableDetails, setEditableDetails] = useState<OrderImportDetail[]>(
-    []
-  );
+  const [receivedQuantities, setReceivedQuantities] = useState<number[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [colors, setColors] = useState<Color[]>([]);
   const [sizes, setSizes] = useState<Size[]>([]);
@@ -48,22 +56,33 @@ const Modal = ({
           `${process.env.NEXT_PUBLIC_API_URL}/order_import_detail?order_import_id=${order.order_import_id}`
         );
         if (!detailRes.ok) throw new Error("ไม่สามารถโหลดรายละเอียดบิล");
-        const detailData = await detailRes.json();
+        const detailData: OrderImportDetail[] = await detailRes.json();
         setDetails(detailData);
-        setEditableDetails(JSON.parse(JSON.stringify(detailData)));
+
+        const receiveRes = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/product_receive?order_import_id=${order.order_import_id}`
+        );
+        if (!receiveRes.ok) throw new Error("ไม่สามารถโหลดข้อมูลรับสินค้า");
+        const receiveData: ProductReceive[] = await receiveRes.json();
+
+        const initialReceivedQuantities = detailData.map((item) => {
+          const receiveItem = receiveData.find(
+            (r) => r.order_import_detail_id === item.order_import_detail_id
+          );
+          return receiveItem ? receiveItem.actual_quantity : 0;
+        });
+        setReceivedQuantities(initialReceivedQuantities);
 
         const [productRes, colorRes, sizeRes] = await Promise.all([
           fetch(`${process.env.NEXT_PUBLIC_API_URL}/products`),
           fetch(`${process.env.NEXT_PUBLIC_API_URL}/colors`),
           fetch(`${process.env.NEXT_PUBLIC_API_URL}/sizes`),
         ]);
-
         const [productData, colorData, sizeData] = await Promise.all([
           productRes.json(),
           colorRes.json(),
           sizeRes.json(),
         ]);
-
         setProducts(productData);
         setColors(colorData);
         setSizes(sizeData);
@@ -75,33 +94,34 @@ const Modal = ({
     fetchAll();
   }, [order.order_import_id]);
 
-  const updateDetailField = (
-    index: number,
-    field: keyof OrderImportDetail,
-    value: any
-  ) => {
-    setEditableDetails((prev) =>
-      prev.map((item, i) => (i === index ? { ...item, [field]: value } : item))
+  const updateReceivedQuantity = (index: number, value: number) => {
+    setReceivedQuantities((prev) =>
+      prev.map((qty, i) => (i === index ? value : qty))
     );
   };
 
   const handleSave = async () => {
     try {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/order_import_detail?order_import_id=${order.order_import_id}`,
+      const items = details.map((item, index) => ({
+        order_import_detail_id: item.order_import_detail_id,
+        actual_quantity: receivedQuantities[index],
+        order_import_id: order.order_import_id, // เพิ่ม id เพื่ออัปเดตภายนอก
+      }));
+
+      const receiveRes = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/product_receive`,
         {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            items: editableDetails, // ส่งข้อมูลที่ถูกแก้ไข
-          }),
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ receiveItems: items }),
         }
       );
+      if (!receiveRes.ok) throw new Error("การบันทึก Product Receive ล้มเหลว");
 
-      if (!res.ok) throw new Error("การบันทึกล้มเหลว");
-      alert("✅ บันทึกเรียบร้อยแล้ว");
+      alert("✅ บันทึกจำนวนที่รับจริงเรียบร้อยแล้ว");
+
+      await refreshData(); // <-- ตรงนี้จะอัปเดต receives ให้สถานะเปลี่ยนโดยอัตโนมัติ
+
       closeModal();
     } catch (err) {
       console.error("❌ Save Error:", err);
@@ -125,22 +145,22 @@ const Modal = ({
             {new Date(order.created_at).toLocaleDateString("th-TH")}
           </p>
           <p>
-            <strong>จำนวนสินค้ารวม:</strong> {order.quantity} ชิ้น
-          </p>
-          <p>
             <strong>ราคารวม:</strong>{" "}
             {order.total_price.toLocaleString("th-TH", {
               minimumFractionDigits: 2,
             })}{" "}
             บาท
           </p>
+          <p>
+            <strong>จำนวนสินค้ารวม:</strong> {order.quantity} ชิ้น
+          </p>
         </div>
 
         <div className="bg-white p-4 rounded-xl shadow mt-6">
           <h2 className="text-lg font-semibold mb-4">
-            รายการสินค้า (แก้ไขได้)
+            รายการสินค้า (ดูข้อมูลและกรอกจำนวนที่ได้รับจริง)
           </h2>
-          {editableDetails.length > 0 ? (
+          {details.length > 0 ? (
             <div className="overflow-x-auto">
               <table className="w-full text-sm text-center border">
                 <thead className="bg-gray-100">
@@ -148,85 +168,43 @@ const Modal = ({
                     <th className="border px-2 py-1">สินค้า</th>
                     <th className="border px-2 py-1">สี</th>
                     <th className="border px-2 py-1">ขนาด</th>
-                    <th className="border px-2 py-1">จำนวน</th>
                     <th className="border px-2 py-1">ราคาต่อหน่วย</th>
                     <th className="border px-2 py-1">รวม</th>
+                    <th className="border px-2 py-1">จำนวนที่สั่ง</th>
+                    <th className="border px-2 py-1">จำนวนที่ได้รับจริง</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {editableDetails.map((item, i) => (
+                  {details.map((item, i) => (
                     <tr key={i} className="border-t">
                       <td className="border px-2 py-1">
                         {products.find((p) => p.pro_id === item.pro_id)
                           ?.pro_name || "ไม่พบชื่อสินค้า"}
                       </td>
                       <td className="border px-2 py-1">
-                        <select
-                          className="border rounded p-1"
-                          value={item.color_id}
-                          onChange={(e) =>
-                            updateDetailField(
-                              i,
-                              "color_id",
-                              Number(e.target.value)
-                            )
-                          }
-                        >
-                          {colors.map((c) => (
-                            <option key={c.color_id} value={c.color_id}>
-                              {c.color_name}
-                            </option>
-                          ))}
-                        </select>
+                        {colors.find((c) => c.color_id === item.color_id)
+                          ?.color_name || "-"}
                       </td>
                       <td className="border px-2 py-1">
-                        <select
-                          className="border rounded p-1"
-                          value={item.size_id}
-                          onChange={(e) =>
-                            updateDetailField(
-                              i,
-                              "size_id",
-                              Number(e.target.value)
-                            )
-                          }
-                        >
-                          {sizes.map((s) => (
-                            <option key={s.size_id} value={s.size_id}>
-                              {s.size_name}
-                            </option>
-                          ))}
-                        </select>
+                        {sizes.find((s) => s.size_id === item.size_id)
+                          ?.size_name || "-"}
                       </td>
-                      <td className="border px-2 py-1">
-                        <input
-                          type="number"
-                          className="border rounded p-1 w-20 text-center"
-                          value={item.quantity}
-                          onChange={(e) =>
-                            updateDetailField(
-                              i,
-                              "quantity",
-                              Number(e.target.value)
-                            )
-                          }
-                        />
-                      </td>
-                      <td className="border px-2 py-1">
-                        <input
-                          type="number"
-                          step="0.01"
-                          className="border rounded p-1 w-24 text-center"
-                          value={item.cost_price}
-                          onChange={(e) =>
-                            updateDetailField(i, "cost_price", e.target.value)
-                          }
-                        />
-                      </td>
+                      <td className="border px-2 py-1">{item.cost_price}</td>
                       <td className="border px-2 py-1">
                         {(
                           Number(item.quantity) * Number(item.cost_price)
                         ).toFixed(2)}
+                      </td>
+                      <td className="border px-2 py-1">{item.quantity}</td>
+                      <td className="border px-2 py-1">
+                        <input
+                          type="number"
+                          className="border rounded p-1 w-20 text-center"
+                          value={receivedQuantities[i] || 0}
+                          onChange={(e) =>
+                            updateReceivedQuantity(i, Number(e.target.value))
+                          }
+                        />
                       </td>
                     </tr>
                   ))}
@@ -237,7 +215,7 @@ const Modal = ({
                   className="bg-green-600 text-white px-4 py-2 rounded-xl hover:bg-green-700"
                   onClick={handleSave}
                 >
-                  💾 บันทึกการแก้ไข
+                  📦 บันทึกจำนวนที่ได้รับจริง
                 </button>
               </div>
             </div>
@@ -250,29 +228,33 @@ const Modal = ({
   );
 };
 
-// Main Page Component
 const ProductImport = () => {
   const [orders, setOrders] = useState<OrderImport[]>([]);
   const [company, setCompany] = useState<Company[]>([]);
+  const [receives, setReceives] = useState<ProductReceive[]>([]);
   const [showModal, setShowModal] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<OrderImport | null>(null);
-  const router = useRouter();
+
+  const fetchData = async () => {
+    const [ordersRes, companyRes, receiveRes] = await Promise.all([
+      fetch(`${process.env.NEXT_PUBLIC_API_URL}/order_import`),
+      fetch(`${process.env.NEXT_PUBLIC_API_URL}/company`),
+      fetch(`${process.env.NEXT_PUBLIC_API_URL}/product_receive`), // ดึงข้อมูลล่าสุด
+    ]);
+
+    const [ordersData, companyData, receiveData] = await Promise.all([
+      ordersRes.json(),
+      companyRes.json(),
+      receiveRes.json(),
+    ]);
+
+    setOrders(ordersData);
+    setCompany(companyData);
+    setReceives(receiveData); // <-- ใช้ข้อมูลใหม่ตรงนี้
+  };
 
   useEffect(() => {
-    const fetchAll = async () => {
-      const [ordersRes, companyRes] = await Promise.all([
-        fetch(`${process.env.NEXT_PUBLIC_API_URL}/order_import`),
-        fetch(`${process.env.NEXT_PUBLIC_API_URL}/company`),
-      ]);
-      const [ordersData, companyData] = await Promise.all([
-        ordersRes.json(),
-        companyRes.json(),
-      ]);
-      setOrders(ordersData);
-      setCompany(companyData);
-    };
-
-    fetchAll();
+    fetchData();
   }, []);
 
   const openModal = (order: OrderImport) => {
@@ -283,6 +265,12 @@ const ProductImport = () => {
   const closeModal = () => {
     setSelectedOrder(null);
     setShowModal(false);
+  };
+
+  const getTotalReceivedQuantity = (orderId: number) => {
+    return receives
+      .filter((r) => r.order_import_id === orderId)
+      .reduce((sum, r) => sum + (r.actual_quantity ?? 0), 0);
   };
 
   return (
@@ -300,41 +288,60 @@ const ProductImport = () => {
                 <th className="border px-3 py-2">เลขที่บิล</th>
                 <th className="border px-3 py-2">บริษัท</th>
                 <th className="border px-3 py-2">วันที่สั่งซื้อ</th>
-                <th className="border px-3 py-2">จำนวนทั้งหมด</th>
                 <th className="border px-3 py-2">ราคารวม</th>
+                <th className="border px-3 py-2">จำนวนที่สั่งทั้งหมด</th>
+                <th className="border px-3 py-2">จำนวนที่รับทั้งหมด</th>
+                <th className="border px-3 py-2">สถานะรับสินค้า</th>
                 <th className="border px-3 py-2">ดูรายละเอียด</th>
               </tr>
             </thead>
             <tbody>
-              {orders.map((order) => (
-                <tr key={order.order_import_id}>
-                  <td className="border px-3 py-1">
-                    00000{order.order_import_id}
-                  </td>
-                  <td className="border px-3 py-1">
-                    {company.find((c) => c.company_id === order.company_id)
-                      ?.company_name || "ไม่พบบริษัท"}
-                  </td>
-                  <td className="border px-3 py-1">
-                    {new Date(order.created_at).toLocaleDateString("th-TH")}
-                  </td>
-                  <td className="border px-3 py-1">{order.quantity}</td>
-                  <td className="border px-3 py-1">
-                    {order.total_price.toLocaleString("th-TH", {
-                      minimumFractionDigits: 2,
-                      maximumFractionDigits: 2,
-                    })}
-                  </td>
-                  <td className="border px-3 py-1">
-                    <button
-                      className="text-blue-600 hover:underline"
-                      onClick={() => openModal(order)}
+              {orders.map((order) => {
+                const totalReceived = getTotalReceivedQuantity(
+                  order.order_import_id
+                );
+                return (
+                  <tr key={order.order_import_id}>
+                    <td className="border px-3 py-1">
+                      00000{order.order_import_id}
+                    </td>
+                    <td className="border px-3 py-1">
+                      {company.find((c) => c.company_id === order.company_id)
+                        ?.company_name || "ไม่พบบริษัท"}
+                    </td>
+                    <td className="border px-3 py-1">
+                      {new Date(order.created_at).toLocaleDateString("th-TH")}
+                    </td>
+                    <td className="border px-3 py-1">
+                      {order.total_price.toLocaleString("th-TH", {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
+                      })}
+                    </td>
+                    <td className="border px-3 py-1">{order.quantity}</td>
+                    <td className="border px-3 py-1">{totalReceived}</td>
+                    <td
+                      className={`border px-3 py-1 font-semibold ${
+                        totalReceived >= order.quantity
+                          ? "text-green-600"
+                          : "text-red-600"
+                      }`}
                     >
-                      ดูรายละเอียด
-                    </button>
-                  </td>
-                </tr>
-              ))}
+                      {totalReceived >= order.quantity
+                        ? "รับสินค้าแล้ว"
+                        : "ยังไม่รับสินค้า"}
+                    </td>
+                    <td className="border px-3 py-1">
+                      <button
+                        className="text-blue-600 hover:underline"
+                        onClick={() => openModal(order)}
+                      >
+                        ดูรายละเอียด
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
@@ -343,7 +350,11 @@ const ProductImport = () => {
       )}
 
       {showModal && selectedOrder && (
-        <Modal order={selectedOrder} closeModal={closeModal} />
+        <Modal
+          order={selectedOrder}
+          closeModal={closeModal}
+          refreshData={fetchData}
+        />
       )}
     </div>
   );
